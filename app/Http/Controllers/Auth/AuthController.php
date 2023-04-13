@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 
-class LoginController extends Controller
+class AuthController extends Controller
 {
     public function login(LoginRequest $request) 
     {
@@ -14,12 +14,17 @@ class LoginController extends Controller
         return $this->respondWithToken($token);
     }
 
+    public function logout(Request $request)
+    {
+        auth()->logout();
+    }
+
     protected function respondWithToken($token)
     {
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60
+            'accessToken' => $token,
+            'tokenType' => 'bearer',
+            'expiresIn' => auth('api')->factory()->getTTL() * 60
         ]);
     }
 }

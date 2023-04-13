@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,4 +19,9 @@ Route::get('/', function () {
     return true;
 });
 
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+Route::middleware('auth:api')->group(function() {
+    // Protected routes
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
