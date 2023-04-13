@@ -9,6 +9,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
         "laravel/tinker": "^2.8",
+        "santigarcor/laratrust": "^8.0",
         "tymon/jwt-auth": "^2.0"
     },
     "require-dev": {
