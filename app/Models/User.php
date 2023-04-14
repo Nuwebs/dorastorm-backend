@@ -63,4 +63,9 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser
     {
         return [];
     }
+
+    public function role()
+    {
+        return $this->roles->first();
+    }
 }
