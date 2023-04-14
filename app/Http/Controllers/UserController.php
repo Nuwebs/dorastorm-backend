@@ -30,15 +30,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        if(!$request->user()->isAbleTo('users-read')) abort(403);
+        $user = User::findOrFail($id);
+        return new UserResource($user);
     }
 
     /**
