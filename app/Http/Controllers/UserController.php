@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Rules\UserRoleRule;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -13,7 +16,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        if (!$request->user()->can('viewAny', User::class)) abort(403);
+        if (!$request->user()->can('viewAny', User::class))
+            abort(403);
         return UserResource::collection(User::paginate(15));
     }
 
@@ -30,7 +34,28 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        
+        if (!$request->user()->can('create', User::class))
+            abort(403);
+        $data = $request->validate([
+            'name' => 'required|string|max:191',
+            'email' => 'required|unique:users|email|max:191',
+            'password' => 'required|string|max:191|min:6|confirmed',
+            'password_confirmation' => 'required|string|max:191|min:6',
+            'role_id' => [
+                'required',
+                'bail',
+                'numeric',
+                'min:1',
+                'exists:roles,id',
+                new UserRoleRule($request->user()->role())
+            ]
+        ]);
+        $newUser = User::make($data);
+        $newUser->password = Hash::make($data['password']);
+        $newUser->save();
+        $newUser->syncRoles([intval($data['role_id'])]);
+        event(new Registered($newUser));
+        return new UserResource($newUser);
     }
 
     /**
@@ -39,7 +64,8 @@ class UserController extends Controller
     public function show(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        if(!$request->user()->can('view', $user)) abort(403);
+        if (!$request->user()->can('view', $user))
+            abort(403);
         return new UserResource($user);
     }
 
