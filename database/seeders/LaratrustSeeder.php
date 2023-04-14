@@ -27,12 +27,13 @@ class LaratrustSeeder extends Seeder
         }
 
         $mapPermission = collect(config('laratrust_seeder.permissions_map'));
-
+        $iH = 0; // Hierarchy level
         foreach ($config as $key => $modules) {
 
             // Create a new role
             $role = \App\Models\Role::firstOrCreate([
                 'name' => $key,
+                'hierarchy' => $iH,
                 'display_name' => ucwords(str_replace('_', ' ', $key)),
                 'description' => ucwords(str_replace('_', ' ', $key))
             ]);
@@ -70,7 +71,7 @@ class LaratrustSeeder extends Seeder
                 ]);
                 $user->addRole($role);
             }
-
+            $iH += 1;
         }
     }
 

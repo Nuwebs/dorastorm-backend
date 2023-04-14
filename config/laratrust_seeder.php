@@ -11,6 +11,9 @@ return [
      */
     'truncate_tables' => true,
 
+    /**
+     * The order of the roles matters. The higher the role, the lower the hierarhy (0 is top priority)
+     */
     'roles_structure' => [
         'superadmin' => [
             'users' => 'c,r,u,d',
