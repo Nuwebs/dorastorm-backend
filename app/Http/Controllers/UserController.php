@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        if (!$request->user()->isAbleTo('users-read')) abort(403);
+        if (!$request->user()->can('viewAny', User::class)) abort(403);
         return UserResource::collection(User::paginate(15));
     }
 
@@ -38,8 +38,8 @@ class UserController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        if(!$request->user()->isAbleTo('users-read')) abort(403);
         $user = User::findOrFail($id);
+        if(!$request->user()->can('view', $user)) abort(403);
         return new UserResource($user);
     }
 
