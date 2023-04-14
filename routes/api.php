@@ -26,4 +26,5 @@ Route::middleware('auth:api')->group(function() {
     // Protected routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/me', [UserController::class, 'showMe'])->name('me');
+    Route::resource('/users', UserController::class);
 });
