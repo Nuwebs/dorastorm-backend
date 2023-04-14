@@ -25,5 +25,5 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::middleware('auth:api')->group(function() {
     // Protected routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/me', [UserController::class, 'me'])->name('me');
+    Route::get('/me', [UserController::class, 'showMe'])->name('me');
 });
