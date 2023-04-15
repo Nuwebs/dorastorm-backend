@@ -79,4 +79,14 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         if ($this->wasChanged('email'))
             $this->sendEmailVerificationNotification();
     }
+
+    public function getAllPermissionsNames(): array
+    {
+        $userPermissions = $this->allPermissions();
+        $permissionNames = [];
+        foreach ($userPermissions as $permission) {
+            array_push($permissionNames, $permission->name);
+        }
+        return $permissionNames;
+    }
 }
