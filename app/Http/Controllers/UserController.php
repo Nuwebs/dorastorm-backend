@@ -97,9 +97,16 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        if (!$request->user()->can('delete', $user)) {
+            abort(403);
+        }
+        if ($this->isLastAdminLeft($user->role())) {
+            abort(409, trans('validation.custom.user_destroy.sole_admin'));
+        }
+        $user->delete();
     }
 
     public function showMe(Request $request)
