@@ -100,12 +100,13 @@ class UserController extends Controller
     public function destroy(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        if (!$request->user()->can('delete', $user)) {
+
+        if (!$request->user()->can('delete', $user))
             abort(403);
-        }
-        if ($this->isLastAdminLeft($user->role())) {
+
+        if ($this->isLastAdminLeft($user->role()))
             abort(409, trans('validation.custom.user_destroy.sole_admin'));
-        }
+
         $user->delete();
     }
 
@@ -113,6 +114,32 @@ class UserController extends Controller
     {
         // Temp
         return new UserResource(auth()->user());
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        if (!$request->user()->can('update', $user))
+            abort(403);
+        
+        $data = $request->validate([
+            'password' => 'required|string|max:191|min:6|confirmed',
+            'password_confirmation' => 'required|string|min:6',
+            'current_password' => [
+                'required',
+                'string',
+                'max:191',
+                'min:6',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+                        $fail(trans('auth.password'));
+                    }
+                }
+            ],
+        ]);
+        $user->password = Hash::make($data['password']);
+        $user->save();
     }
 
     private function getRoleValidationRules(Role $currentUserRole): array

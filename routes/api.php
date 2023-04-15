@@ -22,9 +22,10 @@ Route::get('/', function () {
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
-Route::middleware('auth:api')->group(function() {
+Route::middleware('auth:api')->group(function () {
     // Protected routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/me', [UserController::class, 'showMe'])->name('me');
+    Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
     Route::apiResource('/users', UserController::class);
 });
