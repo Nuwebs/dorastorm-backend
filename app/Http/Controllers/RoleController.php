@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RoleResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Role;
 
@@ -16,14 +17,6 @@ class RoleController extends Controller
         if (!$request->user()->can('viewAny', Role::class))
             abort(403);
         return RoleResource::collection(Role::orderBy('hierarchy', 'asc')->get());
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -70,14 +63,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
@@ -110,9 +95,18 @@ class RoleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $role = Role::findOrFail($id);
+        if (!$request->user()->can('delete', $role))
+            abort(403);
+
+        $nUsersUsingRole = User::whereHasRole($role->name)->count();
+
+        if ($nUsersUsingRole > 1)
+            abort(422, 'There are users using this role');
+
+        $role->delete();
     }
 
     private function appendPermissionsToValidation(array $validationRules, array $permissions): array

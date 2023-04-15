@@ -26,6 +26,23 @@ class Role extends RoleModel
     }
 
     /**
+    * Deletes the current Role model instance from the database and updates the hierarchy values of other roles accordingly. Returns a boolean indicating whether the deletion was successful.
+    * @return bool A boolean indicating whether the deletion was successful.
+    */
+    public function delete(): bool
+    {
+        if (!parent::delete())
+            return false;
+
+        $rolesBelow = Role::where('hierarchy', '>', $this->hierarchy)->orderBy('hierarchy', 'asc')->get();
+        foreach ($rolesBelow as $role) {
+            $role->hierarchy -= 1;
+            $role->save();
+        }
+        return true;
+    }
+
+    /**
      * Assigns a hierarchy value to a Role model instance and saves it to the database.
      * If the $creating parameter is set to true or if the new hierarchy value is greater
      * than the current hierarchy value, it will call the makeHierarchyRoom() method
