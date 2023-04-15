@@ -58,9 +58,12 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        $role = Role::findOrFail($id);
+        if (!$request->user()->can('view', $role)) abort(403);
+
+        return new RoleResource($role);
     }
 
     /**
