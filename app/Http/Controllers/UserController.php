@@ -46,7 +46,7 @@ class UserController extends Controller
         $newUser->save();
         $newUser->syncRoles([intval($data['role_id'])]);
         //event(new Registered($newUser));
-        return new UserResource($newUser);
+        return response('', 201);
     }
 
     /**

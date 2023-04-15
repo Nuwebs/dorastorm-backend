@@ -53,6 +53,8 @@ class RoleController extends Controller
         $role->syncPermissions(
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );
+
+        return response('', 201);
     }
 
     /**
