@@ -43,7 +43,7 @@ class RoleController extends Controller
             'description' => 'string|nullable',
         ];
         $data = $request->validate($this->appendPermissionsToValidation($validationRules, $allPermissions));
-        
+
         $role = new Role();
         $role->name = strtolower($data['name']);
         $role->display_name = ucwords($data['name']);
@@ -61,7 +61,8 @@ class RoleController extends Controller
     public function show(Request $request, string $id)
     {
         $role = Role::findOrFail($id);
-        if (!$request->user()->can('view', $role)) abort(403);
+        if (!$request->user()->can('view', $role))
+            abort(403);
 
         return new RoleResource($role);
     }
@@ -79,7 +80,29 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+        $role = Role::findOrFail($id);
+
+        if (!$user->can('update', $role))
+            abort(403);
+
+        $allPermissions = Role::getAllDsPermissionsNames();
+
+        $validationRules = [
+            'name' => 'required|unique:roles,name,' . $role->id . '|min:2|max:50',
+            'hierarchy' => 'required|gt:' . $user->role()->hierarchy,
+            'description' => 'string|nullable'
+        ];
+        $data = $request->validate($this->appendPermissionsToValidation($validationRules, $allPermissions));
+
+        $role->name = strtolower($data['name']);
+        $role->display_name = ucwords($data['name']);
+        $role->description = $data['description'] ?? null;
+
+        $role->assignHierarchyAndSave($data['hierarchy'], false);
+        $role->syncPermissions(
+            $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
+        );
     }
 
     /**
@@ -96,7 +119,7 @@ class RoleController extends Controller
             'required',
             'array',
             'min:1',
-            'in:'. implode(',', $permissions)
+            'in:' . implode(',', $permissions)
         ];
         return $validationRules;
     }
