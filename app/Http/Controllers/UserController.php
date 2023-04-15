@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use App\Rules\UserRoleRule;
 use Illuminate\Auth\Events\Registered;
@@ -36,25 +37,22 @@ class UserController extends Controller
     {
         if (!$request->user()->can('create', User::class))
             abort(403);
-        $data = $request->validate([
-            'name' => 'required|string|max:191',
-            'email' => 'required|unique:users|email|max:191',
-            'password' => 'required|string|max:191|min:6|confirmed',
-            'password_confirmation' => 'required|string|max:191|min:6',
-            'role_id' => [
-                'required',
-                'bail',
-                'numeric',
-                'min:1',
-                'exists:roles,id',
-                new UserRoleRule($request->user()->role())
-            ]
-        ]);
+        $data = $request->validate(
+            array_merge(
+                [
+                    'name' => 'required|string|max:191',
+                    'email' => 'required|unique:users|email|max:191',
+                    'password' => 'required|string|max:191|min:8|confirmed',
+                    'password_confirmation' => 'required|string|max:191|min:8',
+                ],
+                $this->getRoleValidationRules($request->user()->role())
+            )
+        );
         $newUser = User::make($data);
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         $newUser->syncRoles([intval($data['role_id'])]);
-        event(new Registered($newUser));
+        //event(new Registered($newUser));
         return new UserResource($newUser);
     }
 
@@ -82,7 +80,34 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        if (!$request->user()->can('update', $user))
+            abort(403);
+        $validations = array_merge(
+            [
+                'name' => 'required|string|max:191',
+                'email' => 'required|email|max:191|unique:users,email,' . $user->id,
+            ],
+            $this->getRoleValidationRules($request->user()->role())
+        );
+        $data = $request->validate($validations);
+
+        $toUpdateUserRole = $user->role();
+        $roleChanged = $toUpdateUserRole->id != $data['role_id'];
+        // Check if the user is the last superadmin left and he is trying to change his role
+        if (
+            $toUpdateUserRole->hierarchy === 0 &&
+            $roleChanged && $this->isLastAdminLeft($toUpdateUserRole)
+        ) {
+            abort(409, trans('validation.custom.user_destroy.sole_admin'));
+        }
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+
+        $user->save();
+        if ($roleChanged)
+            $user->syncRoles([intval($data['role_id'])]);
     }
 
     /**
@@ -97,5 +122,28 @@ class UserController extends Controller
     {
         // Temp
         return new UserResource(auth()->user());
+    }
+
+    private function getRoleValidationRules(Role $currentUserRole): array
+    {
+        return [
+            'role_id' => [
+                'required',
+                'bail',
+                'numeric',
+                'min:1',
+                'exists:roles,id',
+                new UserRoleRule($currentUserRole)
+            ]
+        ];
+    }
+
+    private function isLastAdminLeft(Role $toUpdateUserRole): bool
+    {
+        $superAdminRoleName = Role::where('hierarchy', '=', 0)->firstOrFail()->name;
+        if ($toUpdateUserRole->hierarchy === 0 && User::whereHasRole($superAdminRoleName)->count() < 2) {
+            return true;
+        }
+        return false;
     }
 }

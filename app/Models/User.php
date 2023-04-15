@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +10,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Laratrust\Contracts\LaratrustUser;
 use Laratrust\Traits\HasRolesAndPermissions;
 
-class User extends Authenticatable implements JWTSubject, LaratrustUser
+class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRolesAndPermissions;
 
@@ -67,5 +67,16 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser
     public function role()
     {
         return $this->roles->first();
+    }
+
+    public function save(array $options = [])
+    {
+        if ($this->isDirty('email'))
+            $this->email_verified_at = null;
+
+        parent::save($options);
+
+        if ($this->wasChanged('email'))
+            $this->sendEmailVerificationNotification();
     }
 }
