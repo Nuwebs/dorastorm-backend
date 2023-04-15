@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -119,10 +120,10 @@ class UserController extends Controller
     public function updatePassword(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         if (!$request->user()->can('update', $user))
             abort(403);
-        
+
         $data = $request->validate([
             'password' => 'required|string|max:191|min:6|confirmed',
             'password_confirmation' => 'required|string|min:6',
@@ -140,6 +141,12 @@ class UserController extends Controller
         ]);
         $user->password = Hash::make($data['password']);
         $user->save();
+    }
+
+    public function rolesBelow(Request $request)
+    {
+        $roles = Role::where('hierarchy', '>', $request->user()->role()->hierarchy)->get();
+        return RoleResource::collection($roles);
     }
 
     private function getRoleValidationRules(Role $currentUserRole): array
