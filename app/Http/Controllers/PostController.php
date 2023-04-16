@@ -116,7 +116,28 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $post = Post::findOrFail($id);
+        if (!$request->user()->can('update', $post))
+            abort(403);
+
+        $data = $request->validate($this->validationRules);
+
+        $post->title = $data['title'];
+        $post->content = $data['content'];
+        $post->description = $data['description'];
+        $post->visible = $data['visible'] ?? $post->visible;
+        $post->private = $data['private'] ?? $post->private;
+        $url = config('filesystems.disks.public.url') . '/';
+        if (!empty($post->banner)) {
+            $url .= $post->banner;
+        }
+        if (!empty($data['banner']) && $data['banner'] != $url) {
+            $post->banner = $data['banner'];
+        }
+        $post->save();
+        if ($request->filled('tags')) {
+            $post->syncTags($data['tags']);
+        }
     }
 
     /**
