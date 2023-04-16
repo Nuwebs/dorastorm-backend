@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -36,4 +37,6 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('/roles', RoleController::class);
 
     Route::resource('/posts', PostController::class)->except('create');
+
+    Route::apiResource('/quotations', QuotationController::class)->except(['update']);
 });

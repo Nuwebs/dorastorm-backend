@@ -19,14 +19,14 @@ return [
             'users' => 'c,r,u,d',
             'posts' => 'c,r,u,d',
             'roles' => 'c,r,u,d',
-            'quotes' => 'r,d',
+            'quotations' => 'r,d',
             'profile' => 'r,u'
         ],
         'admin' => [
             'users' => 'c,r,u,d',
             'posts' => 'c,r,u,d',
             'roles' => 'r',
-            'quotes' => 'r,d',
+            'quotations' => 'r,d',
             'profile' => 'r,u'
         ],
         'editor' => [            
