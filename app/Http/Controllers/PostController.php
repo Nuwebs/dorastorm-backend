@@ -71,14 +71,6 @@ class PostController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -110,9 +102,13 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Request $request, string $id)
     {
-        //
+        $post = Post::findOrFail($id);
+        if (!$request->user()->can('update', $post))
+            abort(403);
+
+        return new PostResource($post);
     }
 
     /**
