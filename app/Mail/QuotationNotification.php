@@ -19,7 +19,7 @@ class QuotationNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('emails.quotations.notifications.title'),
+            subject: __('emails.quotations.title'),
         );
     }
 
