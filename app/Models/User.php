@@ -69,6 +69,11 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         return $this->roles->first();
     }
 
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
     public function save(array $options = [])
     {
         if ($this->isDirty('email'))
