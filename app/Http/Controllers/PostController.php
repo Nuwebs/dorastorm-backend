@@ -16,7 +16,7 @@ class PostController extends Controller
         'visible' => 'boolean',
         'private' => 'boolean'
     ];
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -38,7 +38,8 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$request->user()->can('create', Post::class)) abort(403);
+        if (!$request->user()->can('create', Post::class))
+            abort(403);
         $data = $request->validate($this->validationRules);
 
         $newPost = Post::make($data);
@@ -80,8 +81,11 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $post = Post::findOrFail($id);
+        if (!$request->user()->can('delete', $post))
+            abort(403);
+        $post->delete();
     }
 }
