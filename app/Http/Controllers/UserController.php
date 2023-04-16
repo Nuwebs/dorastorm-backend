@@ -145,7 +145,9 @@ class UserController extends Controller
 
     public function rolesBelow(Request $request)
     {
-        $roles = Role::where('hierarchy', '>', $request->user()->role()->hierarchy)->get();
+        $userRoleHierarchy = $request->user()->role()->hierarchy;
+        $roles = Role::where('hierarchy', '>', ($userRoleHierarchy === 0) ? -1 : $userRoleHierarchy)
+            ->orderBy('hierarchy', 'asc')->get();
         return RoleResource::collection($roles);
     }
 
