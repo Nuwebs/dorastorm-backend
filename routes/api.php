@@ -35,5 +35,5 @@ Route::middleware('auth:api')->group(function () {
 
     Route::apiResource('/roles', RoleController::class);
 
-    Route::apiResource('/posts', PostController::class);
+    Route::resource('/posts', PostController::class)->except('create');
 });
