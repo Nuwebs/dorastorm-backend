@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\QuotationReceived;
 use App\Http\Resources\QuotationResource;
 use App\Models\Quotation;
 use Illuminate\Http\Request;
@@ -27,8 +28,8 @@ class QuotationController extends Controller
             'name' => 'required|string|max:120|min:3',
             'content' => 'required|string|min:10'
         ]);
-        Quotation::create($data);
-        //Mail::to($data['email'])->queue(new QuotationReceived($data['name'], $data['subject']));
+        $quotation = Quotation::create($data);
+        QuotationReceived::dispatch($quotation);
         return response('', 201);
     }
 

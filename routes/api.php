@@ -24,6 +24,7 @@ Route::get('/', function () {
 });
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
 
 Route::middleware('auth:api')->group(function () {
     // Protected routes
@@ -38,5 +39,5 @@ Route::middleware('auth:api')->group(function () {
 
     Route::resource('/posts', PostController::class)->except('create');
 
-    Route::apiResource('/quotations', QuotationController::class)->except(['update']);
+    Route::apiResource('/quotations', QuotationController::class)->except(['update', 'store']);
 });
