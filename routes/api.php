@@ -30,6 +30,7 @@ Route::post('/quotations', [QuotationController::class, 'store'])->name('quotati
 Route::middleware('guest')->group(function () {
     // Guest only routes
     Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::middleware('auth:api')->group(function () {
