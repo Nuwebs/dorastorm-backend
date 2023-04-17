@@ -27,13 +27,17 @@ Route::get('/', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-})->middleware(['auth:api', 'signed'])->name('verification.verify');
+Route::middleware('guest')->group(function () {
+    // Guest only routes
+    Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('password.reset');
+});
 
 Route::middleware('auth:api')->group(function () {
     // Protected routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+        ->middleware('signed')->name('verification.verify');
 
     Route::get('/me', [UserController::class, 'showMe'])->name('me');
     Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');
