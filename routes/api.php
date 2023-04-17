@@ -5,6 +5,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,10 @@ Route::get('/', function () {
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+})->middleware(['auth:api', 'signed'])->name('verification.verify');
 
 Route::middleware('auth:api')->group(function () {
     // Protected routes

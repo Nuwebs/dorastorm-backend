@@ -45,7 +45,7 @@ class UserController extends Controller
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         $newUser->syncRoles([intval($data['role_id'])]);
-        //event(new Registered($newUser));
+        event(new Registered($newUser));
         return response('', 201);
     }
 
