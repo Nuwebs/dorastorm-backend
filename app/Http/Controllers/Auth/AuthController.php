@@ -20,6 +20,11 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
+    public function refreshToken()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+
     public function logout(Request $request)
     {
         auth()->logout();

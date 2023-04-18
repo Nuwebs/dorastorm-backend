@@ -25,7 +25,7 @@ Route::get('/', function () {
     return true;
 });
 
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
 
 Route::middleware('guest')->group(function () {
@@ -36,7 +36,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     // Protected routes
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/token', [AuthController::class, 'refreshToken'])->name('auth.refresh');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
         ->middleware('signed')->name('verification.verify');
