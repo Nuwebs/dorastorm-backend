@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
@@ -39,6 +40,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
         ->middleware('signed')->name('verification.verify');
+
+    Route::get('/file/retrieve', [FileController::class, 'retrieve']);
+    Route::post('/file/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
+    Route::post('/file/upload/document', [FileController::class, 'uploadDocument'])->name('upload.document');
 
     Route::get('/me', [UserController::class, 'showMe'])->name('me');
     Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');

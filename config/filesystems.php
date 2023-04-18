@@ -39,7 +39,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -72,5 +72,25 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum File Size
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the maximum file sizes (in MB) allowed for different
+    | types of files. The array keys represent the file types and the array values
+    | represent the maximum file size for that file type. This can be used to
+    | restrict the file size for certain types of files, such as images, videos,
+    | documents, or other types of files.
+    |
+    */
+
+    'max_file_size' => [
+        'image' => 5000,
+        'video' => 30000,
+        'document' => 2000,
+        'others' => 2000
+    ]
 
 ];
