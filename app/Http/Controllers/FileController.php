@@ -42,7 +42,7 @@ class FileController extends Controller
         $path = $request->query('path');
         if (!Storage::exists($path))
             abort(404);
-        return Storage::get($path);
+        return Storage::response($path, 'test');
     }
 
     public function uploadImage(Request $request)
