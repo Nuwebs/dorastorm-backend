@@ -26,6 +26,8 @@ Route::get('/', function () {
 });
 
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+Route::get('/token', [AuthController::class, 'refreshToken'])->name('auth.refresh');
+
 Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
 
 Route::middleware('guest')->group(function () {
@@ -36,7 +38,6 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     // Protected routes
-    Route::get('/token', [AuthController::class, 'refreshToken'])->name('auth.refresh');
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])

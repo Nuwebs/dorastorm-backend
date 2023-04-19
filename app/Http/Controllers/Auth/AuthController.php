@@ -11,6 +11,9 @@ use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
@@ -22,7 +25,15 @@ class AuthController extends Controller
 
     public function refreshToken()
     {
-        return $this->respondWithToken(auth()->refresh());
+        try {
+            return $this->respondWithToken(auth()->refresh());
+        } catch (TokenExpiredException) {
+            return response()->json(['message' => __('auth.expired_token')], 409);
+        } catch (TokenInvalidException) {
+            return response()->json(['message' => __('auth.invalid_token')], 422);
+        } catch (JWTException $e) {
+            abort(422, $e);
+        }
     }
 
     public function logout(Request $request)
@@ -46,7 +57,7 @@ class AuthController extends Controller
         if ($status !== Password::RESET_LINK_SENT) {
             return response()->json([
                 'errors' => ['email' => __($status)]
-            ]);
+            ], 422);
         }
 
         return response()->json(['status' => __($status)], 200);
@@ -75,7 +86,7 @@ class AuthController extends Controller
         if ($status !== Password::PASSWORD_RESET) {
             return response()->json([
                 'errors' => ['email' => __($status)]
-            ]);
+            ], 422);
         }
 
         return response()->json(['status' => __($status)], 200);

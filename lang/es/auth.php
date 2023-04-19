@@ -18,4 +18,7 @@ return [
     'throttle' => 'Demasiados intentos de acceso. Por favor inténtelo de nuevo en :seconds segundos.',
     'authenticated' => 'Ya estás autenticado.',
 
+    // JWT
+    'expired_token' => 'El token ha expirado y no puede ser refrescado. Se requiere iniciar sesión nuevamente.',
+    'invalid_token' => 'El token es inválido o su firma no se pudo verificar.',
 ];
