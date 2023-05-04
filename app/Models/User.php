@@ -87,6 +87,13 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
             event(new Registered($this));
     }
 
+    public function delete()
+    {
+        if (!parent::delete()) return false;
+        $this->syncRoles([]);
+        return true;
+    }
+
     public function getAllPermissionsNames(): array
     {
         $userPermissions = $this->allPermissions();
