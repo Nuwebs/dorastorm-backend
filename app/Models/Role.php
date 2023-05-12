@@ -7,6 +7,7 @@ use Laratrust\Models\Role as RoleModel;
 
 class Role extends RoleModel
 {
+    const MAX_ROLE_HIERARCHY = 16777213;
     public $guarded = [];
 
     public static function getAllDsPermissions(): Collection
@@ -44,32 +45,43 @@ class Role extends RoleModel
 
     public function assignHierarchyAndSave(int $hierarchy, bool $creating = true): void
     {
-        if ($creating || $hierarchy < $this->hierarchy) {
-            $prev = $creating?  16777213 - 1: $this->hierarchy;
-            $this->hierarchy = 16777213;
-            $this->save();
+        // Prevent the execution of this function if is not necessary.
+        if ($hierarchy === $this->hierarchy)
+            return;
+
+        // Prevent hierarchies with humbers greater than the assigned to the lowest priority role
+        $maxHierarchyAvailable = Role::max('hierarchy') + 1;
+        if ($hierarchy > $maxHierarchyAvailable)
+            $hierarchy = $maxHierarchyAvailable;
+
+        // Prevent assign a hierarchy with better priority than the superadmin (hierarchy 0)
+        if ($hierarchy < 1)
+            $hierarchy = 1;
+
+        $prev = $creating ? Role::MAX_ROLE_HIERARCHY - 1 : $this->hierarchy;
+        $this->hierarchy = Role::MAX_ROLE_HIERARCHY;
+        $this->save();
+        $this->makeHierarchyRoom($hierarchy, $prev, $creating);
+        $this->hierarchy = $hierarchy;
+        $this->save();
+    }
+
+    private function makeHierarchyRoom(int $hierarchy, int $prevHierarchy, bool $creating): void
+    {
+        $increment = 1;
+        if ($creating || $hierarchy < $prevHierarchy) {
             $rolesToChange = Role::where('hierarchy', '>=', $hierarchy)
-                ->where('hierarchy', '<', $prev)
+                ->where('hierarchy', '<', $prevHierarchy)
                 ->orderBy('hierarchy', 'desc')->get();
-            foreach ($rolesToChange as $role) {
-                $role->hierarchy += 1;
-                $role->save();
-            }
-            $this->hierarchy = $hierarchy;
-            $this->save();
         } else {
-            $prev = $this->hierarchy;
-            $this->hierarchy = 16777213;
-            $this->save();
-            $rolesToChange = Role::where('hierarchy', '>', $prev)
+            $rolesToChange = Role::where('hierarchy', '>', $prevHierarchy)
                 ->where('hierarchy', '<=', $hierarchy)
                 ->orderBy('hierarchy')->get();
-            foreach ($rolesToChange as $role) {
-                $role->hierarchy -= 1;
-                $role->save();
-            }
-            $this->hierarchy = $hierarchy;
-            $this->save();
+            $increment = -1;
+        }
+        foreach ($rolesToChange as $role) {
+            $role->hierarchy += $increment;
+            $role->save();
         }
     }
 }
