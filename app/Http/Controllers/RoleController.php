@@ -86,7 +86,9 @@ class RoleController extends Controller
         $role->display_name = ucwords($data['name']);
         $role->description = $data['description'] ?? null;
 
-        $role->assignHierarchyAndSave($data['hierarchy'], false);
+        if ($data['hierarchy'] !== $role->hierarchy) {
+            $role->assignHierarchyAndSave($data['hierarchy'], false);
+        }
         $role->syncPermissions(
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );
