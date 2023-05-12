@@ -16,7 +16,7 @@ class RoleController extends Controller
     {
         if (!$request->user()->can('viewAny', Role::class))
             abort(403);
-        return RoleResource::collection(Role::orderBy('hierarchy', 'asc')->get());
+        return RoleResource::collection(Role::orderBy('hierarchy', 'asc')->paginate(15));
     }
 
     /**
@@ -103,7 +103,7 @@ class RoleController extends Controller
 
         $nUsersUsingRole = User::whereHasRole($role->name)->count();
 
-        if ($nUsersUsingRole > 1)
+        if ($nUsersUsingRole > 0)
             abort(422, 'There are users using this role');
 
         $role->delete();
