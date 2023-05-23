@@ -132,7 +132,7 @@ return [
     'custom' => [
         'user_role' => 'El :attribute debe ser menos importante que el suyo.',
         'user_destroy' => [
-            'sole_admin' => 'Usted es el único administrador restante.'
+            'sole_admin' => 'Usted es el único súper-administrador restante.'
         ]
     ],
 
