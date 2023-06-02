@@ -41,8 +41,9 @@ class RoleController extends Controller
         $role->name = strtolower($data['name']);
         $role->display_name = ucwords($data['name']);
         $role->description = $data['description'] ?? null;
+        $role->save();
 
-        $role->assignHierarchyAndSave($data['hierarchy'], true);
+        $role->assignHierarchy($data['hierarchy'], true);
         $role->syncPermissions(
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );
@@ -85,8 +86,9 @@ class RoleController extends Controller
         $role->name = strtolower($data['name']);
         $role->display_name = ucwords($data['name']);
         $role->description = $data['description'] ?? null;
+        $role->save();
 
-        $role->assignHierarchyAndSave($data['hierarchy'], false);
+        $role->assignHierarchy($data['hierarchy'], false);
         $role->syncPermissions(
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );

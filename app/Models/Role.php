@@ -43,7 +43,7 @@ class Role extends RoleModel
         return true;
     }
 
-    public function assignHierarchyAndSave(int $hierarchy, bool $creating = true): void
+    public function assignHierarchy(int $hierarchy, bool $creating = true): void
     {
         // Prevent the execution of this function if is not necessary.
         if ($hierarchy === $this->hierarchy)
