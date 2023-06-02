@@ -44,7 +44,9 @@ class UserController extends Controller
         $newUser = User::make($data);
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
-        $newUser->syncRoles([intval($data['role_id'])]);
+        // If there isn't any role_id in the request, the role will be the lowest in the hierarchy.
+        $roleId = !empty($data['role_id']) ? intval($data['role_id']) : Role::max('hierarchy')->id;
+        $newUser->syncRoles([$roleId]);
         event(new Registered($newUser));
         return response('', 201);
     }
@@ -78,7 +80,8 @@ class UserController extends Controller
         $data = $request->validate($validations);
 
         $toUpdateUserRole = $user->role();
-        $roleChanged = $toUpdateUserRole->id != $data['role_id'];
+        $roleChanged = !empty($data['role_id']) && $toUpdateUserRole->id != $data['role_id'];
+
         // Check if the user is the last superadmin left and he is trying to change his role
         if (
             $toUpdateUserRole->hierarchy === 0 &&
@@ -155,7 +158,7 @@ class UserController extends Controller
     {
         return [
             'role_id' => [
-                'required',
+                'nullable',
                 'bail',
                 'numeric',
                 'min:1',
