@@ -45,7 +45,8 @@ class UserController extends Controller
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         // If there isn't any role_id in the request, the role will be the lowest in the hierarchy.
-        $roleId = !empty($data['role_id']) ? intval($data['role_id']) : Role::max('hierarchy')->id;
+        $roleId = !empty($data['role_id']) ?
+            intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()->id;
         $newUser->syncRoles([$roleId]);
         event(new Registered($newUser));
         return response('', 201);
