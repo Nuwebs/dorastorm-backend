@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Hash;
@@ -41,9 +41,24 @@ class AuthController extends Controller
         auth()->logout();
     }
 
-    public function verifyEmail(EmailVerificationRequest $request)
+    public function verifyEmail(Request $request)
     {
-        $request->fulfill();
+        $id = (string) $request->route('id');
+        $hash = (string) $request->route('hash');
+
+        $user = User::find($id);
+        if (!(!empty($user) && hash_equals(sha1($user->getEmailForVerification()), $hash)))
+            abort(422);
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            event(new Verified($user()));
+        }
+    }
+
+    public function resendEmailVerification(Request $request)
+    {
+        $request->user()->sendEmailVerificationNotification();
     }
 
     public function sendResetPasswordLink(Request $request)
@@ -79,7 +94,7 @@ class AuthController extends Controller
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
-                event (new PasswordReset($user));
+                event(new PasswordReset($user));
             }
         );
 

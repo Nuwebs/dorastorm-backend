@@ -30,6 +30,9 @@ Route::get('/token', [AuthController::class, 'refreshToken'])->name('auth.refres
 
 Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
 
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->middleware('signed')->name('verification.verify');
+
 Route::middleware('guest')->group(function () {
     // Guest only routes
     Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('password.reset');
@@ -40,8 +43,7 @@ Route::middleware('auth:api')->group(function () {
     // Protected routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-    Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
-        ->middleware('signed')->name('verification.verify');
+    Route::get('/email/verification', [AuthController::class, 'resendEmailVerification'])->name('verification.resend');
 
     Route::get('/file/retrieve', [FileController::class, 'retrieve']);
     Route::post('/file/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
