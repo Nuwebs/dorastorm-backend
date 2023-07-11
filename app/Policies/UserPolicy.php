@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Utils\DsPermission;
 
 class UserPolicy
 {
@@ -12,7 +12,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAbleTo('users-read');
+        return $user->isAbleTo(DsPermission::USERS_READ);
     }
 
     /**
@@ -20,7 +20,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->isAbleTo('users-read') || $user->id === $model->id; 
+        return $user->isAbleTo(DsPermission::USERS_READ) || $user->id === $model->id;
     }
 
     /**
@@ -28,7 +28,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAbleTo('users-create');
+        return $user->isAbleTo(DsPermission::USERS_CREATE);
     }
 
     /**
@@ -36,7 +36,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->isAbleTo('users-update') || $user->id === $model->id;
+        return $user->isAbleTo(DsPermission::USERS_UPDATE) || $user->id === $model->id;
     }
 
     /**
@@ -47,7 +47,7 @@ class UserPolicy
         // Users with the users-delete permission could not delete another users whose hierarchy is lower.
         // The Superadmins are the only users who can delete users with the same hierarchy level.
         // Any user can delete himself.
-        return ($user->isAbleTo('users-delete') && ($user->role()->hierarchy < $model->role()->hierarchy || $user->role()->hierarchy < 1))
+        return ($user->isAbleTo(DsPermission::USERS_DELETE) && ($user->role()->hierarchy < $model->role()->hierarchy || $user->role()->hierarchy < 1))
             || $user->id === $model->id;
     }
 }

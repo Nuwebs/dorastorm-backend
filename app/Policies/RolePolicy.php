@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Utils\DsPermission;
 
 class RolePolicy
 {
@@ -13,7 +13,7 @@ class RolePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAbleTo('roles-read');
+        return $user->isAbleTo(DsPermission::ROLES_READ);
     }
 
     /**
@@ -31,7 +31,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAbleTo('roles-create');
+        return $user->isAbleTo(DsPermission::ROLES_CREATE);
     }
 
     /**
@@ -40,7 +40,7 @@ class RolePolicy
     public function update(User $user, Role $role): bool
     {
         $userRole = $user->role();
-        return $user->isAbleTo('roles-update') && $this->checkHierarchy($userRole, $role);
+        return $user->isAbleTo(DsPermission::ROLES_UPDATE) && $this->checkHierarchy($userRole, $role);
     }
 
     /**
@@ -49,7 +49,7 @@ class RolePolicy
     public function delete(User $user, Role $role): bool
     {
         $userRole = $user->role();
-        return $user->isAbleTo('roles-delete') && $this->checkHierarchy($userRole, $role);
+        return $user->isAbleTo(DsPermission::ROLES_DELETE) && $this->checkHierarchy($userRole, $role);
     }
 
     private function checkHierarchy(Role $userRole, Role $role)

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Post;
+use App\Utils\DsPermission;
 
 class PostPolicy
 {
@@ -12,7 +13,7 @@ class PostPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAbleTo('posts-create');
+        return $user->isAbleTo(DsPermission::POSTS_CREATE);
     }
 
     /**
@@ -20,7 +21,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        return $user->isAbleTo('posts-update') || $user->id === $post->user_id;
+        return $user->isAbleTo(DsPermission::POSTS_UPDATE) || $user->id === $post->user_id;
     }
 
     /**
@@ -28,6 +29,6 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        return $user->isAbleTo('posts-delete') || $user->id === $post->user_id;
+        return $user->isAbleTo(DsPermission::POSTS_DELETE) || $user->id === $post->user_id;
     }
 }

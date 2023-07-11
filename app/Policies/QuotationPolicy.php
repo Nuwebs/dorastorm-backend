@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Quotation;
 use App\Models\User;
+use App\Utils\DsPermission;
 
 class QuotationPolicy
 {
@@ -12,7 +12,7 @@ class QuotationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAbleTo('quotations-read');
+        return $user->isAbleTo(DsPermission::QUOTATIONS_READ);
     }
 
     /**
@@ -20,6 +20,6 @@ class QuotationPolicy
      */
     public function delete(User $user): bool
     {
-        return $user->isAbleTo('quotations-delete');
+        return $user->isAbleTo(DsPermission::QUOTATIONS_DELETE);
     }
 }
