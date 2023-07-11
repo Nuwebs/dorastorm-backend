@@ -83,7 +83,7 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
 
         parent::save($options);
 
-        if ($this->wasChanged('email'))
+        if ($this->wasChanged('email') || !$this->hasVerifiedEmail())
             event(new Registered($this));
     }
 

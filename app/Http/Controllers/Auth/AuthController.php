@@ -52,7 +52,7 @@ class AuthController extends Controller
 
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
-            event(new Verified($user()));
+            event(new Verified($user));
         }
     }
 
