@@ -6,7 +6,6 @@ use App\Events\QuotationReceived;
 use App\Http\Resources\QuotationResource;
 use App\Models\Quotation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class QuotationController extends Controller
 {
@@ -29,7 +28,7 @@ class QuotationController extends Controller
             'content' => 'required|string|min:10'
         ]);
         $quotation = Quotation::create($data);
-        QuotationReceived::dispatch($quotation);
+        event(new QuotationReceived($quotation));
         return response('', 201);
     }
 

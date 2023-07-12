@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Listeners\SendUserEmailVerification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 use App\Events\QuotationReceived;
 use App\Listeners\SendEmailQuotationNotification;
 
