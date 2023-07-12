@@ -49,7 +49,7 @@ class Role extends RoleModel
         if ($hierarchy === $this->hierarchy)
             return;
 
-        // Prevent hierarchies with humbers greater than the assigned to the lowest priority role
+        // Prevent hierarchies with numbers greater than the assigned to the lowest priority role
         $maxHierarchyAvailable = Role::max('hierarchy') + 1;
         if ($hierarchy > $maxHierarchyAvailable)
             $hierarchy = $maxHierarchyAvailable;
