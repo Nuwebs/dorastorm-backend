@@ -1,5 +1,6 @@
 <?php
 
+use App\Utils\DsFeature;
 use Illuminate\Support\Facades\Facade;
 
 return [
@@ -16,6 +17,31 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Features
+    |--------------------------------------------------------------------------
+    |
+    | Some of the Dorastorm3 backend features are optional. You may disable the
+    | features by removing them from this array. You're free to only remove
+    | some of these features or you can even remove all of these if you need to.
+    |
+    | Keep in mind that if you disable the auth feature, the modules that
+    | require authentication will be disabled too.
+    | With the base DS3 modules, if you disable the auth feaure, you are
+    | essentially disabling all the other feaures.
+    |
+    | You can use the DsFeature enum and this config to extend your modules
+    | for bigger apps. Don't forget to use properly the conditions in the api
+    | routes file.
+    */
+
+    'features' => [
+        DsFeature::AUTH,
+        DsFeature::POSTS_MODULE,
+        DsFeature::QUOTATIONS_MODULE
+    ],
 
     /*
     |--------------------------------------------------------------------------
