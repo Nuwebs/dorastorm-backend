@@ -1,13 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\FileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,10 +41,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     Route::get('/email/verification', [AuthController::class, 'resendEmailVerification'])->name('verification.resend');
-
-    Route::get('/file/retrieve', [FileController::class, 'retrieve']);
-    Route::post('/file/upload/image', [FileController::class, 'uploadImage'])->name('upload.image');
-    Route::post('/file/upload/document', [FileController::class, 'uploadDocument'])->name('upload.document');
 
     Route::get('/me', [UserController::class, 'showMe'])->name('me');
     Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');
