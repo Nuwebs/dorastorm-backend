@@ -10,6 +10,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
         "laravel/tinker": "^2.8",
+        "nuwebs/primevue-ds-datatable": "2.*",
         "santigarcor/laratrust": "^8.0",
         "spatie/laravel-tags": "^4.3",
         "tymon/jwt-auth": "^2.0"
@@ -65,5 +66,11 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Nuwebs/primevue-ds-datatable"
+        }
+    ]
 }
