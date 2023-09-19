@@ -7,7 +7,6 @@ use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use App\Rules\UserRoleRule;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -48,7 +47,6 @@ class UserController extends Controller
         $roleId = !empty($data['role_id']) ?
             intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()->id;
         $newUser->syncRoles([$roleId]);
-        event(new Registered($newUser));
         return response('', 201);
     }
 
