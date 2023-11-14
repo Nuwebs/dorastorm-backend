@@ -69,11 +69,11 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         Route::apiResource('/roles', RoleController::class);
 
         if (DsFeature::enabled(DsFeature::QUOTATIONS_MODULE)) {
-            Route::resource('/posts', PostController::class)->except('create', 'index', 'show');
+            Route::apiResource('/quotations', QuotationController::class)->except(['update', 'store']);
         }
 
         if (DsFeature::enabled(DsFeature::POSTS_MODULE)) {
-            Route::apiResource('/quotations', QuotationController::class)->except(['update', 'store']);
+            Route::resource('/posts', PostController::class)->except('create', 'index', 'show');
         }
     });
 }
