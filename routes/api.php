@@ -5,6 +5,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\EnsureMaintenanceKey;
 use App\Utils\DsFeature;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -27,10 +28,37 @@ Route::get('/', function () {
     ];
 });
 
-Route::get('/config-cache', function () {
-    Artisan::call('config:cache');
-    Artisan::call('route:cache');
-});
+/**
+ * Maintenance routes.
+ * Do NOT change the prefix. If necessary, you will need to change the EnsureMaintenanceKey
+ * middleware code and the PreventRequestsDuringMaintenance middleware $except array.
+ */
+if (DsFeature::enabled(DsFeature::MAINTENANCE_ROUTES)) {
+    Route::prefix('mtc/{key}')->middleware(EnsureMaintenanceKey::class)->group(function () {
+        Route::get('/cache-config', function () {
+            Artisan::call('config:cache');
+            Artisan::call('route:cache');
+        });
+
+        Route::get('/cache-clear', function () {
+            Artisan::call('cache:clear');
+        });
+
+        Route::get('/migrate', function () {
+            Artisan::call('migrate');
+        });
+
+        Route::get('/down', function () {
+            Artisan::call('down');
+            return 'The service has been shutdown correctly';
+        });
+
+        Route::get('/up', function () {
+            Artisan::call('up');
+            return 'The service is up again';
+        });
+    });
+}
 
 if (DsFeature::enabled(DsFeature::AUTH)) {
     // Login and token refresh

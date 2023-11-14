@@ -5,6 +5,7 @@ enum DsFeature {
     case AUTH;
     case POSTS_MODULE;
     case QUOTATIONS_MODULE;
+    case MAINTENANCE_ROUTES;
 
     public static function enabled(DsFeature $feature): bool
     {

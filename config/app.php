@@ -40,7 +40,8 @@ return [
     'features' => [
         DsFeature::AUTH,
         DsFeature::POSTS_MODULE,
-        DsFeature::QUOTATIONS_MODULE
+        DsFeature::QUOTATIONS_MODULE,
+        DsFeature::MAINTENANCE_ROUTES,
     ],
 
     /*
@@ -156,6 +157,12 @@ return [
     'key' => env('APP_KEY'),
 
     'cipher' => 'AES-256-CBC',
+
+    /**
+     * The maintenance key is the key that must be entered when trying to access
+     * the maintenance endpoints (if the maintenance feature is enabled).
+     */
+    'maintenance_key'=> env('APP_MAINTENANCE_KEY'),
 
     /*
     |--------------------------------------------------------------------------
