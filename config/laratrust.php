@@ -294,7 +294,11 @@ return [
         | will be accessible from.
         |
         */
-        'domain' => env('LARATRUST_PANEL_DOMAIN', env('LARATRUST_PANEL_DOMAIN', (app()->runningInConsole() === false) ? request()->getHost() : 'localhost')),
+        // The following line is commented because it causes problems
+        // with shared hosting maintenance modes.
+        // 'domain' => env('LARATRUST_PANEL_DOMAIN', env('LARATRUST_PANEL_DOMAIN', (app()->runningInConsole() === false) ? request()->getHost() : 'localhost')),
+        'domain' => env('LARATRUST_PANEL_DOMAIN', 'localhost'),
+
 
         /*
         |--------------------------------------------------------------------------
