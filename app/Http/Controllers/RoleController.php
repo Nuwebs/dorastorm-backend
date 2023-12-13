@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\RoleResource;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\Role;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class RoleController extends Controller
 {
@@ -16,7 +19,18 @@ class RoleController extends Controller
     {
         if (!$request->user()->can('viewAny', Role::class))
             abort(403);
-        return RoleResource::collection(Role::orderBy('hierarchy', 'asc')->paginate(15));
+        $results = QueryBuilder::for(Role::orderBy('hierarchy', 'asc'))->allowedFilters([
+            AllowedFilter::callback('global', function (Builder $query, $value) {
+                $query->where('name', 'LIKE', "%$value%")
+                    ->orWhere('display_name', 'LIKE', "%$value%")
+                    ->orWhere('description', 'LIKE', "%$value%")
+                    ->orWhere('hierarchy', '=', $value)
+                    ->orWhereHas('permissions', function ($query) use ($value) {
+                        $query->where('name', 'LIKE', "%$value%");
+                    });
+            })
+        ])->paginate(25);
+        return RoleResource::collection($results);
     }
 
     /**

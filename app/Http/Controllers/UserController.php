@@ -7,8 +7,11 @@ use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use App\Rules\UserRoleRule;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class UserController extends Controller
 {
@@ -19,7 +22,13 @@ class UserController extends Controller
     {
         if (!$request->user()->can('viewAny', User::class))
             abort(403);
-        return UserResource::collection(User::paginate(15));
+        $results = QueryBuilder::for(User::class)->allowedFilters([
+            AllowedFilter::callback('global', function (Builder $query, $value) {
+                $query->where('name', 'LIKE', "%$value%")
+                    ->orWhere('email', 'LIKE', "%$value%");
+            })
+        ])->paginate(25);
+        return UserResource::collection($results);
     }
 
     /**
