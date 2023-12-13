@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Events\QuotationReceived;
 use App\Http\Resources\QuotationResource;
 use App\Models\Quotation;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class QuotationController extends Controller
 {
@@ -14,8 +17,17 @@ class QuotationController extends Controller
     {
         if (!$request->user()->can('viewAny', Quotation::class))
             abort(403);
-
-        return QuotationResource::collection(Quotation::orderBy('created_at', 'desc')->paginate(15));
+        $results = QueryBuilder::for(Quotation::orderBy('created_at', 'desc'))->allowedFilters([
+            AllowedFilter::callback('global', function (Builder $query, $value) {
+                $query->where('id', '=', $value)
+                    ->orWhere('subject', 'LIKE', "%$value%")
+                    ->orWhere('email', 'LIKE', "%$value%")
+                    ->orWhere('phone', 'LIKE', "%$value%")
+                    ->orWhere('name', 'LIKE', "%$value%")
+                    ->orWhere('content', 'LIKE', "%$value%");
+            })
+        ])->paginate(25);
+        return QuotationResource::collection($results);
     }
 
     public function store(Request $request)
