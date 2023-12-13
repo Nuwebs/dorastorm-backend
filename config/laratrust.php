@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'most_basic_role_name' => 'standard',
     /*
     |--------------------------------------------------------------------------
     | Use MorphMap in relationships between models

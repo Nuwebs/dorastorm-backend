@@ -72,6 +72,10 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         // Guest only routes
         Route::post('/forgot-password', [AuthController::class, 'sendResetPasswordLink'])->name('password.reset');
         Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+        if (DsFeature::enabled(DsFeature::ALLOW_SIGNUPS)) {
+            Route::post('/signup', [UserController::class, 'signUp'])->name('user.signup');
+        }
     });
 
     if (DsFeature::enabled(DsFeature::QUOTATIONS_MODULE)) {

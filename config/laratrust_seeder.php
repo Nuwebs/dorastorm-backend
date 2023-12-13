@@ -29,11 +29,11 @@ return [
             'quotations' => 'r,d',
             'profile' => 'r,u'
         ],
-        'editor' => [            
+        'editor' => [
             'posts' => 'c,r,u,d',
             'profile' => 'r,u',
         ],
-        'standard' => [
+        config('laratrust.most_basic_role_name') => [
             'profile' => 'r,u',
         ],
     ],

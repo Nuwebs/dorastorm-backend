@@ -15,6 +15,12 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class UserController extends Controller
 {
+    protected array $newUserValidations = [
+        'name' => 'required|string|max:191',
+        'email' => 'required|unique:users|email|max:191',
+        'password' => 'required|string|max:191|min:8|confirmed',
+        'password_confirmation' => 'required|string|max:191|min:8',
+    ];
     /**
      * Display a listing of the resource.
      */
@@ -40,12 +46,7 @@ class UserController extends Controller
             abort(403);
         $data = $request->validate(
             array_merge(
-                [
-                    'name' => 'required|string|max:191',
-                    'email' => 'required|unique:users|email|max:191',
-                    'password' => 'required|string|max:191|min:8|confirmed',
-                    'password_confirmation' => 'required|string|max:191|min:8',
-                ],
+                $this->newUserValidations,
                 $this->getRoleValidationRules($request->user()->role())
             )
         );
@@ -56,6 +57,16 @@ class UserController extends Controller
         $roleId = !empty($data['role_id']) ?
             intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()->id;
         $newUser->syncRoles([$roleId]);
+        return response('', 201);
+    }
+
+    public function signUp(Request $request)
+    {
+        $data = $request->validate($this->newUserValidations);
+        $newUser = User::make($data);
+        $newUser->password = Hash::make($data['password']);
+        $newUser->save();
+        $newUser->addRole(config('laratrust.most_basic_role_name'));
         return response('', 201);
     }
 

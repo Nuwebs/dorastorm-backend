@@ -40,6 +40,7 @@ return [
     'features' => [
         DsFeature::AUTH,
         DsFeature::POSTS_MODULE,
+        DsFeature::ALLOW_SIGNUPS,
         DsFeature::QUOTATIONS_MODULE,
         DsFeature::MAINTENANCE_ROUTES,
     ],

@@ -4,6 +4,7 @@ namespace App\Utils;
 enum DsFeature {
     case AUTH;
     case POSTS_MODULE;
+    case ALLOW_SIGNUPS;
     case QUOTATIONS_MODULE;
     case MAINTENANCE_ROUTES;
 
