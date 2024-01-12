@@ -50,7 +50,7 @@ class UserController extends Controller
                 $this->getRoleValidationRules($request->user()->role())
             )
         );
-        $newUser = User::make($data);
+        $newUser = new User($data);
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         // If there isn't any role_id in the request, the role will be the lowest in the hierarchy.
@@ -63,7 +63,7 @@ class UserController extends Controller
     public function signUp(Request $request)
     {
         $data = $request->validate($this->newUserValidations);
-        $newUser = User::make($data);
+        $newUser = new User($data);
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         $newUser->addRole(config('laratrust.most_basic_role_name'));

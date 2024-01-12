@@ -22,24 +22,24 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      * The index method could receive query params. Those params are the following:
-     * 
-     * q: Use it for a simple search. The content inside that param will be used with a 
+     *
+     * q: Use it for a simple search. The content inside that param will be used with a
      * LIKE sql function for the title or content of the available posts.
-     * 
+     *
      * mine: Will only show the current logged in user posts. (Ignoring private or visible)
-     * 
+     *
      * p: Will show all private and visible posts avaiable if the user have the rights to see them.
-     * 
+     *
      * t: Will look for posts containing, at least, one of the tags specified.
      * The format should be t=tag1,tag2,tag3, ..., tagn
-     * 
+     *
      * e: Use it to exclude results. Works as the opposite of the q param.
-     * 
+     *
      * You could use a combination of the params using the & operator in a single query. For example:
      * /posts?q=pitbull&t=dogs,products&e=cats
      * That query will look for posts that contain "pitbull" in the title or content, with
      * "dogs" or "products" tags, and excluding anything related to "cats".
-     * 
+     *
      * return PostResource collection paginated.
      */
     public function index(Request $request)
@@ -79,7 +79,7 @@ class PostController extends Controller
             abort(403);
         $data = $request->validate($this->validationRules);
 
-        $newPost = Post::make($data);
+        $newPost = new Post($data);
         $newPost->private = $data['private'] ?? false;
         $newPost->user_id = $request->user()->id;
         $newPost->save();

@@ -10,9 +10,13 @@ class Role extends RoleModel
     const MAX_ROLE_HIERARCHY = 16777213;
     public $guarded = [];
 
+    /**
+     * @return Collection<int, Permission>
+     */
     public static function getAllDsPermissions(): Collection
     {
         $superAdmin = Role::where('hierarchy', 0)->firstOrFail();
+        // @phpstan-ignore-next-line
         return $superAdmin->permissions;
     }
 

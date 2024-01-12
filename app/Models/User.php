@@ -7,7 +7,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Queue;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Laratrust\Contracts\LaratrustUser;
 use Laratrust\Traits\HasRolesAndPermissions;
@@ -76,20 +75,23 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         return $this->hasMany(Post::class);
     }
 
-    public function save(array $options = [])
+    public function save(array $options = []): bool
     {
         if ($this->isDirty('email'))
             $this->email_verified_at = null;
 
-        parent::save($options);
+        $result = parent::save($options);
 
         if ($this->wasChanged('email') || !$this->hasVerifiedEmail())
             event(new Registered($this));
+
+        return $result;
     }
 
     public function delete()
     {
-        if (!parent::delete()) return false;
+        if (!parent::delete())
+            return false;
         $this->syncRoles([]);
         return true;
     }
@@ -99,6 +101,7 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         $userPermissions = $this->allPermissions();
         $permissionNames = [];
         foreach ($userPermissions as $permission) {
+            // @phpstan-ignore-next-line
             array_push($permissionNames, $permission->name);
         }
         return $permissionNames;

@@ -4,7 +4,11 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Post;
 
+/**
+ * @mixin Post
+ */
 class PostResource extends JsonResource
 {
     /**
@@ -15,7 +19,7 @@ class PostResource extends JsonResource
     public function toArray(Request $request): array
     {
         $author = $this->user;
-        $path = is_null($this->banner)? null : config('filesystems.disks.public.url').'/'.$this->banner;
+        $path = is_null($this->banner) ? null : config('filesystems.disks.public.url') . '/' . $this->banner;
         return [
             'id' => $this->id,
             'title' => $this->title,
