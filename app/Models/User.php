@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -58,23 +59,30 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *
-     * @return array
+     * @return array<string>
      */
     public function getJWTCustomClaims()
     {
         return [];
     }
 
-    public function role()
+    public function role(): Role
     {
+        // @phpstan-ignore-next-line
         return $this->roles->first();
     }
 
-    public function posts()
+    /**
+     * @return HasMany<Post>
+     */
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
     }
 
+    /**
+     * @param array<string, bool> $options
+     */
     public function save(array $options = []): bool
     {
         if ($this->isDirty('email'))
@@ -88,7 +96,7 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         return $result;
     }
 
-    public function delete()
+    public function delete(): bool
     {
         if (!parent::delete())
             return false;
@@ -96,6 +104,9 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
         return true;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getAllPermissionsNames(): array
     {
         $userPermissions = $this->allPermissions();

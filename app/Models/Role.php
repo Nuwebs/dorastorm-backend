@@ -20,6 +20,9 @@ class Role extends RoleModel
         return $superAdmin->permissions;
     }
 
+    /**
+     * @return array<string>
+     */
     public static function getAllDsPermissionsNames(): array
     {
         $allPermissions = Role::getAllDsPermissions();

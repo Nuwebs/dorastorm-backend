@@ -8,23 +8,30 @@ use App\Models\Role;
 use App\Models\User;
 use App\Rules\UserRoleRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Hash;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
+    /**
+     * @var array<string, string>
+     */
     protected array $newUserValidations = [
         'name' => 'required|string|max:191',
         'email' => 'required|unique:users|email|max:191',
         'password' => 'required|string|max:191|min:8|confirmed',
         'password_confirmation' => 'required|string|max:191|min:8',
     ];
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         if (!$request->user()->can('viewAny', User::class))
             abort(403);
@@ -40,7 +47,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): UserResource
     {
         if (!$request->user()->can('create', User::class))
             abort(403);
@@ -57,34 +64,37 @@ class UserController extends Controller
         $roleId = !empty($data['role_id']) ?
             intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()->id;
         $newUser->syncRoles([$roleId]);
-        return response('', 201);
+
+        return new UserResource($newUser);
     }
 
-    public function signUp(Request $request)
+    public function signUp(Request $request): UserResource
     {
         $data = $request->validate($this->newUserValidations);
         $newUser = new User($data);
         $newUser->password = Hash::make($data['password']);
         $newUser->save();
         $newUser->addRole(config('laratrust.most_basic_role_name'));
-        return response('', 201);
+
+        return new UserResource($newUser);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request, string $id): UserResource
     {
         $user = User::findOrFail($id);
         if (!$request->user()->can('view', $user))
             abort(403);
+
         return new UserResource($user);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
         if (!$request->user()->can('update', $user))
@@ -115,12 +125,14 @@ class UserController extends Controller
         $user->save();
         if ($roleChanged)
             $user->syncRoles([intval($data['role_id'])]);
+
+        return response()->json(null, Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
 
@@ -131,15 +143,17 @@ class UserController extends Controller
             abort(409, trans('validation.custom.user_destroy.sole_admin'));
 
         $user->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    public function showMe(Request $request)
+    public function showMe(Request $request): UserResource
     {
         // Temp
         return new UserResource(auth()->user());
     }
 
-    public function updatePassword(Request $request, $id)
+    public function updatePassword(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
 
@@ -163,9 +177,11 @@ class UserController extends Controller
         ]);
         $user->password = Hash::make($data['password']);
         $user->save();
+
+        return response()->json(null, Response::HTTP_OK);
     }
 
-    public function rolesBelow(Request $request)
+    public function rolesBelow(Request $request): AnonymousResourceCollection
     {
         $userRoleHierarchy = $request->user()->role()->hierarchy;
         $roles = Role::where('hierarchy', '>', ($userRoleHierarchy === 0) ? -1 : $userRoleHierarchy)
@@ -173,6 +189,9 @@ class UserController extends Controller
         return RoleResource::collection($roles);
     }
 
+    /**
+     * @return array<string, array<int, string|UserRoleRule>>
+     */
     private function getRoleValidationRules(Role $currentUserRole): array
     {
         return [

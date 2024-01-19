@@ -11,6 +11,9 @@ use App\Models\Tag;
  */
 class TagResource extends JsonResource
 {
+    /**
+     * @return array <string, array<string>>
+     */
     public function toArray(Request $request): array
     {
         return [

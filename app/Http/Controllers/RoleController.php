@@ -5,17 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Resources\RoleResource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Role;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
+use Symfony\Component\HttpFoundation\Response;
 
 class RoleController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         if (!$request->user()->can('viewAny', Role::class))
             abort(403);
@@ -36,7 +39,7 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): RoleResource
     {
         $user = $request->user();
 
@@ -61,13 +64,13 @@ class RoleController extends Controller
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );
 
-        return response('', 201);
+        return new RoleResource($role);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request, string $id): RoleResource
     {
         $role = Role::findOrFail($id);
         if (!$request->user()->can('view', $role))
@@ -79,7 +82,7 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
         $role = Role::findOrFail($id);
@@ -105,12 +108,14 @@ class RoleController extends Controller
         $role->syncPermissions(
             $this->getAllowedPermissions($user->getAllPermissionsNames(), $data['permissions'])
         );
+
+        return response()->json(null, Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $role = Role::findOrFail($id);
         if (!$request->user()->can('delete', $role))
@@ -122,8 +127,15 @@ class RoleController extends Controller
             abort(422, 'There are users using this role');
 
         $role->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @param array<string, string> $validationRules
+     * @param array<string> $permissions
+     * @return array<string, string>
+     */
     private function appendPermissionsToValidation(array $validationRules, array $permissions): array
     {
         $validationRules['permissions'] = [
@@ -135,7 +147,12 @@ class RoleController extends Controller
         return $validationRules;
     }
 
-    private function getAllowedPermissions(array $userPermissions, array $requestedPermissions)
+    /**
+     * @param array<string> $userPermissions
+     * @param array<string> $requestedPermissions
+     * @return array<string>
+     */
+    private function getAllowedPermissions(array $userPermissions, array $requestedPermissions): array
     {
         return array_intersect($requestedPermissions, $userPermissions);
     }

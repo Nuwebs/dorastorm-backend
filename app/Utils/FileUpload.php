@@ -12,8 +12,15 @@ class FileUpload
     protected string $folder;
     protected string $disk;
     protected bool $expectsArray;
+
+    /**
+     * @var array<string, string> $extraValidationRules
+     */
     protected array $extraValidationRules;
 
+    /**
+     * @param array<string, string> $extraValidationRules
+     */
     public function __construct(
         string $folder,
         string $disk,
@@ -28,12 +35,18 @@ class FileUpload
         $this->extraValidationRules = $extraValidationRules;
     }
 
+    /**
+     * @return array<string, string|array<string, string>>
+     */
     public function getImageValidationRules(): array
     {
         $rule = 'image|max:' . config('filesystems.max_file_size.image');
         return $this->makeValidations($rule);
     }
 
+    /**
+     * @return array<string, string|array<string, string>>
+     */
     public function getDocumentValidationRules(): array
     {
         $mimes = MimeType::DOCUMENTS->value;
@@ -42,7 +55,8 @@ class FileUpload
     }
 
     /**
-     * @return array|string The function will return an array if the $files parameter
+     * @param UploadedFile|array<UploadedFile>|null $files
+     * @return array<string>|string The function will return an array if the $files parameter
      * is an array, string otherwise
      */
     public function upload(
@@ -64,6 +78,9 @@ class FileUpload
         }
     }
 
+    /**
+     * @return array<string, string|array<string, string>>
+     */
     private function makeValidations(string $eachFileRules): array
     {
         if ($this->expectsArray) {
@@ -83,6 +100,10 @@ class FileUpload
         return $path;
     }
 
+    /**
+     * @param array<UploadedFile> $files
+     * @return array<string>
+     */
     private function multipleFileStore(array $files): array
     {
         $paths = [];

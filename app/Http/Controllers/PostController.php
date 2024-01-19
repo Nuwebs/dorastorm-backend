@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class PostController extends Controller
 {
+    /**
+     * @var array<string, string>
+     */
     private array $validationRules = [
         'title' => 'required|string|min:5|max:190',
         'description' => 'required|string|min:5|max:300',
@@ -42,7 +49,7 @@ class PostController extends Controller
      *
      * return PostResource collection paginated.
      */
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         // Check if the user is trying to get their own posts
         if ($request->filled('mine')) {
@@ -73,7 +80,7 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): PostResource
     {
         if (!$request->user()->can('create', Post::class))
             abort(403);
@@ -88,13 +95,13 @@ class PostController extends Controller
             $newPost->attachTags($data['tags']);
         }
 
-        return response('', 201);
+        return new PostResource($newPost);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $slug)
+    public function show(string $slug): PostResource
     {
         return new PostResource(Post::getPostWithChecks($slug));
     }
@@ -102,7 +109,7 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request, string $id)
+    public function edit(Request $request, string $id): PostResource
     {
         $post = Post::findOrFail($id);
         if (!$request->user()->can('update', $post))
@@ -114,7 +121,7 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
         $post = Post::findOrFail($id);
         if (!$request->user()->can('update', $post))
@@ -138,20 +145,28 @@ class PostController extends Controller
         if ($request->filled('tags')) {
             $post->syncTags($data['tags']);
         }
+
+        return response()->json(null, Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $post = Post::findOrFail($id);
         if (!$request->user()->can('delete', $post))
             abort(403);
         $post->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function executeIndexQuery(Request $request, $query)
+    /**
+     * @param Request $request
+     * @param Builder<Post> $query
+     */
+    private function executeIndexQuery(Request $request, Builder $query): AnonymousResourceCollection
     {
         if ($request->filled('q')) {
             $q = $request->input('q');

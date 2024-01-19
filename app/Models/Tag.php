@@ -12,8 +12,9 @@ class Tag extends \Spatie\Tags\Tag
      * app()->getLocale() method.
      * If you want to customize the names of the i18n tags, if you need it,
      * you may change this method.
+     * @return string
      */
-    public static function getLocale()
+    public static function getLocale(): string
     {
         return 'noi18n';
     }

@@ -6,42 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): mixed
     {
         $token = $request->authenticate();
         return $this->respondWithToken($token);
     }
 
-    public function refreshToken()
+    public function refreshToken(): JsonResponse
     {
         try {
             return $this->respondWithToken(auth()->refresh());
         } catch (TokenExpiredException) {
-            return response()->json(['message' => __('auth.expired_token')], 409);
+            return response()->json(['message' => __('auth.expired_token')], Response::HTTP_CONFLICT);
         } catch (TokenInvalidException) {
-            return response()->json(['message' => __('auth.invalid_token')], 422);
+            return response()->json(['message' => __('auth.invalid_token')], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (JWTException $e) {
-            abort(422, $e);
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY, $e);
         }
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): void
     {
         auth()->logout();
     }
 
-    public function verifyEmail(Request $request)
+    public function verifyEmail(Request $request): void
     {
         $id = (string) $request->route('id');
         $hash = (string) $request->route('hash');
@@ -56,12 +58,12 @@ class AuthController extends Controller
         }
     }
 
-    public function resendEmailVerification(Request $request)
+    public function resendEmailVerification(Request $request): void
     {
         $request->user()->sendEmailVerificationNotification();
     }
 
-    public function sendResetPasswordLink(Request $request)
+    public function sendResetPasswordLink(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email'
@@ -72,13 +74,13 @@ class AuthController extends Controller
         if ($status !== Password::RESET_LINK_SENT) {
             return response()->json([
                 'errors' => ['email' => __($status)]
-            ], 422);
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        return response()->json(['status' => __($status)], 200);
+        return response()->json(['status' => __($status)], Response::HTTP_OK);
     }
 
-    public function resetPassword(Request $request)
+    public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
             'token' => 'required',
@@ -91,7 +93,7 @@ class AuthController extends Controller
             function (User $user, string $password) {
                 $user->forceFill([
                     'password' => Hash::make($password)
-                ])->setRememberToken(Str::random(60));
+                ]);
 
                 $user->save();
                 event(new PasswordReset($user));
@@ -101,17 +103,18 @@ class AuthController extends Controller
         if ($status !== Password::PASSWORD_RESET) {
             return response()->json([
                 'errors' => ['email' => __($status)]
-            ], 422);
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        return response()->json(['status' => __($status)], 200);
+        return response()->json(['status' => __($status)], Response::HTTP_OK);
     }
 
-    protected function respondWithToken($token)
+    protected function respondWithToken(string $token): JsonResponse
     {
         return response()->json([
             'accessToken' => $token,
             'tokenType' => 'bearer',
+            // @phpstan-ignore-next-line
             'expiresIn' => auth('api')->factory()->getTTL() * 60
         ]);
     }

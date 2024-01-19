@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class UserRoleRule implements ValidationRule
 {
-    protected $userRole;
+    protected Role $userRole;
     /**
      * Create a new rule instance.
      *

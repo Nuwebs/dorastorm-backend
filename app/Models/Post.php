@@ -22,6 +22,11 @@ class Post extends Model
         'private'
     ];
 
+    protected $casts = [
+        'visible' => 'boolean',
+        'private' => 'boolean'
+    ];
+
 
     /**
      * @return BelongsTo<User, Post>
@@ -34,6 +39,9 @@ class Post extends Model
         ]);
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     public function sluggable(): array
     {
         return [
@@ -47,7 +55,7 @@ class Post extends Model
      * Returns a Post model searching by its slug. Returns 404 if not found.
      *
      */
-    public static function getPostWithChecks($slug): Post
+    public static function getPostWithChecks(string $slug): Post
     {
         $post = static::findBySlugOrFail($slug);
 
@@ -55,16 +63,18 @@ class Post extends Model
             abort(409, 'The slug is not unique.');
         }
 
-        if ($post->visible && !$post->private) {
+        // The "visible" property is colliding with the visible model array
+        $visible = (bool) $post->getAttribute('visible');
+        if ($visible && !$post->private) {
             return $post;
         }
         $auth = Auth::check();
-        // If the post is visible and its private the user must be authenticated
-        if ($post->visible && $post->private && $auth) {
+        // If the post is visible and it is private, the user must be authenticated
+        if ($visible && $post->private && $auth) {
             return $post;
         }
         // If the post is not visible the user should not see it unless he is the owner of the post or have permissions of updating
-        if (!$post->visible && $auth && Gate::allows('update', $post)) {
+        if (!$visible && $auth && Gate::allows('update', $post)) {
             return $post;
         }
         abort(403);

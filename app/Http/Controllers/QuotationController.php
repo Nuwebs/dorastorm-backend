@@ -6,14 +6,17 @@ use App\Events\QuotationReceived;
 use App\Http\Resources\QuotationResource;
 use App\Models\Quotation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
+use Symfony\Component\HttpFoundation\Response;
 
 class QuotationController extends Controller
 {
 
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         if (!$request->user()->can('viewAny', Quotation::class))
             abort(403);
@@ -30,7 +33,7 @@ class QuotationController extends Controller
         return QuotationResource::collection($results);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): QuotationResource
     {
         $data = $request->validate([
             'subject' => 'required|string|max:150|min:5',
@@ -41,21 +44,24 @@ class QuotationController extends Controller
         ]);
         $quotation = Quotation::create($data);
         event(new QuotationReceived($quotation));
-        return response('', 201);
+
+        return new QuotationResource($quotation);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, string $id): QuotationResource
     {
         if (!$request->user()->can('viewAny', Quotation::class))
             abort(403);
-        return Quotation::findOrFail($id);
+        return new QuotationResource(Quotation::findOrFail($id));
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, string $id): JsonResponse
     {
         if (!$request->user()->can('delete', Quotation::class))
             abort(403);
-        $Quotation = Quotation::findOrFail($id);
-        $Quotation->delete();
+        $quotation = Quotation::findOrFail($id);
+        $quotation->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 }

@@ -52,7 +52,7 @@ class RolePolicy
         return $user->isAbleTo(DsPermission::ROLES_DELETE) && $this->checkHierarchy($userRole, $role);
     }
 
-    private function checkHierarchy(Role $userRole, Role $role)
+    private function checkHierarchy(Role $userRole, Role $role): bool
     {
         return $userRole->hierarchy < $role->hierarchy;
     }
