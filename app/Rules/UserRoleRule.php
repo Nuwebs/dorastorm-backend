@@ -26,11 +26,17 @@ class UserRoleRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $role = Role::find($value);
-        if ($this->userRole->id === $role->id)
-            return;
-        if (!(($role->hierarchy > $this->userRole->hierarchy) || $this->userRole->hierarchy === 0)) {
-            $fail('The :attribute have a higher hierarchy than the allowed.');
+        // I'm not sure to use the guard pattern here because Laravel docs dont's specify
+        // if only the fail closure should be called or if $fail(...) and then a return works.
+        if ($value instanceof Role) {
+            $role = Role::find($value);
+            if ($this->userRole->id === $role->id)
+                return;
+            if (!(($role->hierarchy > $this->userRole->hierarchy) || $this->userRole->hierarchy === 0)) {
+                $fail('The :attribute have a higher hierarchy than the allowed.');
+            }
+        } else {
+            $fail('The :attribute passed is not a Role model');
         }
     }
 }

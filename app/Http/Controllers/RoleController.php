@@ -134,7 +134,7 @@ class RoleController extends Controller
     /**
      * @param array<string, string> $validationRules
      * @param array<string> $permissions
-     * @return array<string, string>
+     * @return array<string, array<string>|string>
      */
     private function appendPermissionsToValidation(array $validationRules, array $permissions): array
     {

@@ -45,12 +45,16 @@ class AuthController extends Controller
 
     public function verifyEmail(Request $request): void
     {
-        $id = (string) $request->route('id');
-        $hash = (string) $request->route('hash');
+        $id = $request->route('id');
+        $hash = $request->route('hash');
+
+        if (!is_string($id) || !is_string($hash)) {
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         $user = User::find($id);
         if (!(!empty($user) && hash_equals(sha1($user->getEmailForVerification()), $hash)))
-            abort(422);
+            abort(Response::HTTP_UNPROCESSABLE_ENTITY);
 
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();

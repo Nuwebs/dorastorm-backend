@@ -40,7 +40,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
         $token = auth()->attempt($this->only('email', 'password'));
-        if (!$token) {
+        if (is_bool($token) && !$token) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -49,7 +49,7 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
-        return $token;
+        return (string) $token;
     }
 
     /**
