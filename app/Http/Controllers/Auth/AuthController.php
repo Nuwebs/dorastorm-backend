@@ -64,7 +64,7 @@ class AuthController extends Controller
 
     public function resendEmailVerification(Request $request): void
     {
-        $request->user()->sendEmailVerificationNotification();
+        $request->user()?->sendEmailVerificationNotification();
     }
 
     public function sendResetPasswordLink(Request $request): JsonResponse

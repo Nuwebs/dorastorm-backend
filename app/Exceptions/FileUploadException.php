@@ -5,7 +5,7 @@ use Exception;
 
 class FileUploadException extends Exception
 {
-    protected Exception $previous;
+    protected Exception|null $previous;
 
     public function __construct(
         string $message = 'The file could not be uploaded',
