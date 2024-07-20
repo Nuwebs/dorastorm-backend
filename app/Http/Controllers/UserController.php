@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use App\Rules\UserRoleRule;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,17 @@ class UserController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Request $request, string $id): UserResource
+    {
+        $user = User::findOrFail($id);
+        $this->authorize('view', $user);
+
+        return new UserResource($user);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): UserResource
@@ -58,9 +70,8 @@ class UserController extends Controller
                 $this->getRoleValidationRules($user->role())
             )
         );
-        $newUser = new User($data);
-        $newUser->password = Hash::make($data['password']);
-        $newUser->save();
+
+        $newUser = $this->createNewUser($data);
         // If there isn't any role_id in the request, the role will be the lowest in the hierarchy.
         $roleId = !empty($data['role_id']) ?
             intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()?->id;
@@ -72,23 +83,11 @@ class UserController extends Controller
     public function signUp(Request $request): UserResource
     {
         $data = $request->validate($this->newUserValidations);
-        $newUser = new User($data);
-        $newUser->password = Hash::make($data['password']);
-        $newUser->save();
+
+        $newUser = $this->createNewUser($data);
         $newUser->addRole(config('laratrust.most_basic_role_name'));
 
         return new UserResource($newUser);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Request $request, string $id): UserResource
-    {
-        $user = User::findOrFail($id);
-        $this->authorize('view', $user);
-
-        return new UserResource($user);
     }
 
     /**
@@ -184,6 +183,21 @@ class UserController extends Controller
         $roles = Role::where('hierarchy', '>', ($userRoleHierarchy === 0) ? -1 : $userRoleHierarchy)
             ->orderBy('hierarchy', 'asc')->get();
         return RoleResource::collection($roles);
+    }
+
+    /**
+     * Summary of createNewUser
+     * @param array<string, mixed> $data
+     * @return \App\Models\User
+     */
+    private function createNewUser(array $data): User
+    {
+        $newUser = new User($data);
+        $newUser->password = Hash::make($data['password']);
+        $newUser->save();
+        event(new Registered($newUser));
+
+        return $newUser;
     }
 
     /**
