@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\DsVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -97,5 +98,16 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject, Larat
             return false;
         $this->syncRoles([]);
         return true;
+    }
+
+    /**
+     * This method is overrides the default sendEmailVerificationNotification in order to
+     * use the DsVerifyEmail notification. That notification is exactly the same as the
+     * one that it is extending, however, it queues the mail.
+     * @return void
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new DsVerifyEmail);
     }
 }
