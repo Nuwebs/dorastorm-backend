@@ -28,34 +28,34 @@ Route::get('/', function () {
 /**
  * Maintenance routes.
  * Do NOT change the prefix. If necessary, you will need to change the EnsureMaintenanceKey
- * middleware code and the PreventRequestsDuringMaintenance middleware $except array.
+ * middleware code and the PreventRequestsDuringMaintenance middleware $except array in bootstrap app.php.
  */
-// if (DsFeature::enabled(DsFeature::MAINTENANCE_ROUTES)) {
-//     Route::prefix('mtc/{key}')->middleware(EnsureMaintenanceKey::class)->group(function () {
-//         Route::get('/cache-config', function () {
-//             Artisan::call('config:cache');
-//             Artisan::call('route:cache');
-//         });
+if (DsFeature::enabled(DsFeature::MAINTENANCE_ROUTES)) {
+    Route::prefix('mtc/{key}')->middleware(EnsureMaintenanceKey::class)->group(function () {
+        Route::get('/cache-config', function () {
+            Artisan::call('config:cache');
+            Artisan::call('route:cache');
+        });
 
-//         Route::get('/cache-clear', function () {
-//             Artisan::call('cache:clear');
-//         });
+        Route::get('/cache-clear', function () {
+            Artisan::call('cache:clear');
+        });
 
-//         Route::get('/migrate', function () {
-//             Artisan::call('migrate');
-//         });
+        Route::get('/migrate', function () {
+            Artisan::call('migrate');
+        });
 
-//         Route::get('/down', function () {
-//             Artisan::call('down');
-//             return 'The service has been shutdown correctly';
-//         });
+        Route::get('/down', function () {
+            Artisan::call('down');
+            return 'The service has been shutdown correctly';
+        });
 
-//         Route::get('/up', function () {
-//             Artisan::call('up');
-//             return 'The service is up again';
-//         });
-//     });
-// }
+        Route::get('/up', function () {
+            Artisan::call('up');
+            return 'The service is up again';
+        });
+    });
+}
 
 if (DsFeature::enabled(DsFeature::AUTH)) {
     // Login and token refresh
