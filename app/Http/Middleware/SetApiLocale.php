@@ -18,8 +18,8 @@ class SetApiLocale
         if (!$request->expectsJson() || !$request->hasHeader('Accept-Language'))
             return $next($request);
 
-        $locale = $request->header('Accept-Language');
-        app()->setLocale($locale ?? config('app.fallback_locale'));
+        $locale = $request->header('Accept-Language') ?? config('app.fallback_locale');
+        app()->setLocale($locale);
 
         return $next($request);
     }
