@@ -90,4 +90,12 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject, Larat
         }
         return $permissionNames;
     }
+
+    public function delete(): bool
+    {
+        if (!parent::delete())
+            return false;
+        $this->syncRoles([]);
+        return true;
+    }
 }
