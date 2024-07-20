@@ -6,11 +6,16 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laratrust\Contracts\LaratrustUser;
+use Laratrust\Traits\HasRolesAndPermissions;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements MustVerifyEmail, JWTSubject
+class User extends Authenticatable implements MustVerifyEmail, JWTSubject, LaratrustUser
 {
-    use HasFactory, Notifiable;
+    /**
+     * @use HasFactory<\Database\Factories\UserFactory>
+     */
+    use HasFactory, Notifiable, HasRolesAndPermissions;
 
     /**
      * The attributes that are mass assignable.
@@ -64,5 +69,25 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function role(): Role
+    {
+        // @phpstan-ignore-next-line
+        return $this->roles->first();
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getAllPermissionsNames(): array
+    {
+        $userPermissions = $this->allPermissions();
+        $permissionNames = [];
+        foreach ($userPermissions as $permission) {
+            // @phpstan-ignore-next-line
+            array_push($permissionNames, $permission->name);
+        }
+        return $permissionNames;
     }
 }

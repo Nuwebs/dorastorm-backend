@@ -11,6 +11,8 @@
         "php": "^8.2",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "santigarcor/laratrust": "^8.3",
+        "spatie/laravel-query-builder": "^6.0",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {

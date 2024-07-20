@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureMaintenanceKey;
 use App\Utils\DsFeature;
@@ -28,7 +31,7 @@ Route::get('/', function () {
 /**
  * Maintenance routes.
  * Do NOT change the prefix. If necessary, you will need to change the EnsureMaintenanceKey
- * middleware code and the PreventRequestsDuringMaintenance middleware $except array in bootstrap app.php.
+ * middleware code and the PreventRequestsDuringMaintenance middleware $except array.
  */
 if (DsFeature::enabled(DsFeature::MAINTENANCE_ROUTES)) {
     Route::prefix('mtc/{key}')->middleware(EnsureMaintenanceKey::class)->group(function () {
@@ -85,5 +88,7 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');
         Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('/users', UserController::class);
+
+        Route::apiResource('/roles', RoleController::class);
     });
 }
