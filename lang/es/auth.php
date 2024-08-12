@@ -13,8 +13,10 @@ return [
     |
     */
 
-    'failed'   => 'Estas credenciales no coinciden con nuestros registros.',
+    'failed' => 'Estas credenciales no coinciden con nuestros registros.',
     'password' => 'La contraseña es incorrecta.',
     'throttle' => 'Demasiados intentos de acceso. Por favor intente nuevamente en :seconds segundos.',
 
+    'expired_token' => 'El token ha expirado y no puede ser refrescado. Se requiere iniciar sesión nuevamente.',
+    'invalid_token' => 'El token es inválido o su firma no se pudo verificar.',
 ];
