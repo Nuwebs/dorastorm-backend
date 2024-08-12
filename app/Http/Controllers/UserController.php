@@ -196,8 +196,12 @@ class UserController extends Controller
         return JWTResource::collection($activeSessions);
     }
 
-    public function revokeSession(Token $token): JsonResponse
+    public function revokeSession(Request $request, Token $token): JsonResponse
     {
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+        if ($token->user_id !== $user->id) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
         // phpcs:ignore reason: The auth guard is the dsjwt. The invalidate method accepts the encoded token to be invalidated
         auth()->invalidate(false, $token->encoded);
 

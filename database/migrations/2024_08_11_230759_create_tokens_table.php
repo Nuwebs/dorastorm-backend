@@ -16,9 +16,9 @@ return new class extends Migration {
             $table->string('key')->unique();
             $table->string('ip');
             $table->string('user_agent');
-            $table->timestamp('expire_date');
+            $table->datetime('expire_date');
             $table->text('encoded');
-            $table->timestamp('blacklist_until')->nullable();
+            $table->datetime('blacklisted_until')->nullable();
             $table->boolean('revoked')->default(false);
             $table->timestamps();
         });

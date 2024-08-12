@@ -23,7 +23,7 @@ class DsTokenBlacklist implements Storage
             return;
 
         $token->update([
-            'blacklist_until' => Carbon::parse($until['valid_until'])->addMinutes($add),
+            'blacklisted_until' => Carbon::parse($until['valid_until'])->addMinutes($add),
             'revoked' => true
         ]);
     }
@@ -58,13 +58,13 @@ class DsTokenBlacklist implements Storage
             return null;
         }
 
-        if (is_null($token->blacklist_until)) {
+        if (is_null($token->blacklisted_until)) {
             // This is hardcoded because Tymon JWT requires it
             return 'forever';
         }
 
         return [
-            'valid_until' => $token->blacklist_until
+            'valid_until' => $token->blacklisted_until
         ];
     }
 
