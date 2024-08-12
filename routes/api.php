@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
@@ -93,5 +94,10 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         Route::apiResource('/users', UserController::class);
 
         Route::apiResource('/roles', RoleController::class);
+
+        if (DsFeature::enabled(DsFeature::ALLOW_API_KEYS)) {
+            Route::post('/api-key', [ApiKeyController::class, 'store'])->name('api-key.store');
+            Route::delete('/api-key/{token}', [ApiKeyController::class, 'revoke'])->name('api-key.revoke');
+        }
     });
 }

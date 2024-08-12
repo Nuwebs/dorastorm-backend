@@ -15,10 +15,13 @@ return [
         'superadmin' => [
             'users' => 'c,r,u,d',
             'roles' => 'c,r,u,d',
+            'manage-api-keys' => 'c,r,u,d',
+            'api-keys' => 'c,r,u,d',
         ],
         'admin' => [
             'users' => 'c,r,u,d',
             'roles' => 'r',
+            'api-keys' => 'c,r,u,d',
         ],
         config('laratrust.most_basic_role_name') => [
         ],

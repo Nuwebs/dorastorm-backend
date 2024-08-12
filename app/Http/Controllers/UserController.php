@@ -191,7 +191,7 @@ class UserController extends Controller
     {
         $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
 
-        $activeSessions = $user->tokens()->where('revoked', false)->get();
+        $activeSessions = $user->tokens()->where('revoked', false)->where('is_api_key', false)->get();
 
         return JWTResource::collection($activeSessions);
     }

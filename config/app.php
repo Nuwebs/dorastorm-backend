@@ -39,6 +39,7 @@ return [
         DsFeature::AUTH,
         DsFeature::ALLOW_SIGNUPS,
         DsFeature::MAINTENANCE_ROUTES,
+        DsFeature::ALLOW_API_KEYS
     ],
 
     /*

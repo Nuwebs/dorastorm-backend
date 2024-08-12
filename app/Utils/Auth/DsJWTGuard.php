@@ -3,6 +3,7 @@
 namespace App\Utils\Auth;
 
 use App\Models\Token;
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -70,12 +71,37 @@ class DsJWTGuard extends JWTGuard
         return $jwt;
     }
 
-    public function tokenById($id)
+    /**
+     * Create a new token by User id.
+     *
+     * @param  mixed  $id
+     * @param int|null $customTTL
+     * @param bool $isApiKey
+     * @return string|null
+     */
+    public function tokenById($id, int|null $customTTL = null, bool $isApiKey = false)
     {
-        throw new \Exception('This feature is disabled using this guard');
+        $request = $this->checkRequest($this->request);
+
+        $user = $id instanceof User ? $id : $this->provider->retrieveById($id);
+
+        if (!$user || !($user instanceof User)) {
+            if (!$user) {
+                return null;
+            }
+            throw new \Exception('The provided authenticatable is not a valid user.');
+        }
+
+        if (!is_null($customTTL)) {
+            $this->factory()->setTTL($customTTL);
+        }
+
+        $payload = $this->jwt->makePayload($user);
+
+        return $this->storeToken($payload, $request, $isApiKey)->get();
     }
 
-    protected function storeToken(Payload $payload, Request $request): JWT
+    protected function storeToken(Payload $payload, Request $request, bool $isApiKey = false): JWT
     {
         $encoded = $this->jwt->manager()->encode($payload);
 
@@ -85,7 +111,8 @@ class DsJWTGuard extends JWTGuard
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'expire_date' => Carbon::parse($payload->get('exp')),
-            'encoded' => $encoded
+            'encoded' => $encoded,
+            'is_api_key' => $isApiKey
         ]);
 
         return $encoded;
