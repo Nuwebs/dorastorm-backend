@@ -19,6 +19,7 @@ class ApiKeyController extends Controller
 
         $user = User::findOrFail((int) $data['user_id']);
 
+        // phpcs:ignore reason: The auth guard is the dsjwt. The tokenById method accepts up to 3 params.
         $token = auth()->tokenById($user, 52560000, true);
 
         if (!is_string($token)) {
@@ -35,6 +36,7 @@ class ApiKeyController extends Controller
         $token = Token::where('encoded', $apiKey)->where('revoked', false)->firstOrFail();
         $this->authorize('delete', $token);
 
+        // phpcs:ignore reason: The auth guard is the dsjwt. The invalidate method accepts a string token
         auth()->invalidate(false, $apiKey);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);

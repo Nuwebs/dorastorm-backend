@@ -28,6 +28,7 @@ class RoleController extends Controller
                     ->orWhere('display_name', 'LIKE', "%$value%")
                     ->orWhere('description', 'LIKE', "%$value%")
                     ->orWhere('hierarchy', '=', $value)
+                    // phpcs:ignore reason: Not stated in docs
                     ->orWhereHas('permissions', function ($query) use ($value) {
                         $query->where('name', 'LIKE', "%$value%");
                     });
