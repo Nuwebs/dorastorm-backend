@@ -29,8 +29,7 @@ class AuthController extends Controller
             abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'The user is not a JWT Subject');
         }
 
-        // phpcs:ignore reason: The auth guard is the dsjwt. It has a login method that returns a string
-        $token = auth()->login($user, $request);
+        $token = auth()->login($user);
 
         return $this->respondWithToken($token);
     }
@@ -38,8 +37,7 @@ class AuthController extends Controller
     public function refreshToken(Request $request): JsonResponse
     {
         try {
-            // phpcs:ignore reason: The auth guard is the dsjwt. It has a request parameter
-            $token = auth()->refresh(false, false, $request);
+            $token = auth()->refresh();
             return $this->respondWithToken($token);
         } catch (TokenExpiredException) {
             return response()->json(['message' => __('auth.expired_token')], Response::HTTP_CONFLICT);

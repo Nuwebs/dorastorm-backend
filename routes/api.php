@@ -85,6 +85,9 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         Route::get('/email/verification', [AuthController::class, 'resendEmailVerification'])->name('verification.resend');
 
         Route::get('/me', [UserController::class, 'showMe'])->name('me');
+        Route::get('/me/sessions', [UserController::class, 'activeSessions'])->name('me.sessions');
+        Route::post('/me/sessions/revoke/{token}', [UserController::class, 'revokeSession'])->name('me.sessions.revoke');
+
         Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');
         Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('/users', UserController::class);

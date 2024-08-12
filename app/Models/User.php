@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Notifications\DsVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laratrust\Contracts\LaratrustUser;
@@ -109,5 +110,15 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject, Larat
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new DsVerifyEmail);
+    }
+
+    /**
+     * Get all of the tokens for the User
+     *
+     * @return HasMany<Token>
+     */
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(Token::class);
     }
 }

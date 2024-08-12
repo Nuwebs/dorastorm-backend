@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\JWTResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
+use App\Models\Token;
 use App\Models\User;
 use App\Rules\UserRoleRule;
 use Illuminate\Auth\Events\Registered;
@@ -183,6 +185,23 @@ class UserController extends Controller
         $roles = Role::where('hierarchy', '>', ($userRoleHierarchy === 0) ? -1 : $userRoleHierarchy)
             ->orderBy('hierarchy', 'asc')->get();
         return RoleResource::collection($roles);
+    }
+
+    public function activeSessions(Request $request): AnonymousResourceCollection
+    {
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+
+        $activeSessions = $user->tokens()->where('revoked', false)->get();
+
+        return JWTResource::collection($activeSessions);
+    }
+
+    public function revokeSession(Token $token): JsonResponse
+    {
+        // phpcs:ignore reason: The auth guard is the dsjwt. The invalidate method accepts the encoded token to be invalidated
+        auth()->invalidate(false, $token->encoded);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 
     /**
