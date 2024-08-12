@@ -12,15 +12,26 @@ use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Symfony\Component\HttpFoundation\Response;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request): mixed
+    public function login(LoginRequest $request): JsonResponse
     {
-        $token = $request->authenticate();
+
+        $request->authenticate();
+        $user = auth()->getLastAttempted();
+
+        if (!$user instanceof JWTSubject) {
+            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'The user is not a JWT Subject');
+        }
+
+        // phpcs:ignore reason: The auth guard is the dsjwt. It have a login method that returns a string
+        $token = auth()->login($user);
+
         return $this->respondWithToken($token);
     }
 
@@ -117,8 +128,7 @@ class AuthController extends Controller
         return response()->json([
             'accessToken' => $token,
             'tokenType' => 'bearer',
-            // @phpstan-ignore-next-line
-            'expiresIn' => auth('api')->factory()->getTTL() * 60
+            'expiresIn' => auth()->factory()->getTTL() * 60
         ]);
     }
 }
