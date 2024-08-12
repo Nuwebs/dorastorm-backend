@@ -19,7 +19,6 @@ class EnsureMaintenanceKey
         if ($key !== config('app.maintenance_key')) {
             abort(403, 'Incorrect key');
         }
-
         return $next($request);
     }
 }

@@ -1,12 +1,13 @@
 <?php
+
 namespace App\Utils;
 
-enum DsFeature {
+enum DsFeature
+{
     case AUTH;
-    case POSTS_MODULE;
     case ALLOW_SIGNUPS;
-    case QUOTATIONS_MODULE;
     case MAINTENANCE_ROUTES;
+    case ALLOW_API_KEYS;
 
     public static function enabled(DsFeature $feature): bool
     {

@@ -191,13 +191,13 @@ return [
     */
     'middleware' => [
         /**
-         * Define if the laratrust middleware are registered automatically in the service provider
+         * Define if the laratrust middleware are registered automatically in the service provider.
          */
         'register' => true,
 
         /**
          * Method to be called in the middleware return case.
-         * Available: abort|redirect
+         * Available: abort|redirect.
          */
         'handling' => 'abort',
 
@@ -207,11 +207,11 @@ return [
          */
         'handlers' => [
             /**
-             * Aborts the execution with a 403 code and allows you to provide the response text
+             * Aborts the execution with a 403 code and allows you to provide the response text.
              */
             'abort' => [
                 'code' => 403,
-                'message' => 'User does not have any of the necessary access rights.'
+                'message' => 'User does not have any of the necessary access rights.',
             ],
 
             /**
@@ -224,10 +224,10 @@ return [
                 'url' => '/home',
                 'message' => [
                     'key' => 'error',
-                    'content' => ''
-                ]
-            ]
-        ]
+                    'content' => '',
+                ],
+            ],
+        ],
     ],
 
     'teams' => [
@@ -294,11 +294,7 @@ return [
         | will be accessible from.
         |
         */
-        // The following line is commented because it causes problems
-        // with shared hosting maintenance modes.
-        // 'domain' => env('LARATRUST_PANEL_DOMAIN', env('LARATRUST_PANEL_DOMAIN', (app()->runningInConsole() === false) ? request()->getHost() : 'localhost')),
-        'domain' => env('LARATRUST_PANEL_DOMAIN', 'localhost'),
-
+        'domain' => env('LARATRUST_PANEL_DOMAIN'),
 
         /*
         |--------------------------------------------------------------------------
@@ -370,5 +366,5 @@ return [
             // The user won't be able to delete the role.
             'not_deletable' => [],
         ],
-    ]
+    ],
 ];

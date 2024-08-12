@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class LoginRequest extends FormRequest
 {
@@ -36,11 +36,16 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): string
+    public function authenticate(): bool
     {
         $this->ensureIsNotRateLimited();
-        $token = auth()->attempt($this->only('email', 'password'));
-        if (is_bool($token) && !$token) {
+        $valid = auth()->attempt($this->only('email', 'password'), false);
+
+        if (!is_bool($valid)) {
+            abort(Response::HTTP_INTERNAL_SERVER_ERROR, 'The authenticate validation should be boolean');
+        }
+
+        if (!$valid) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -49,7 +54,7 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
-        return (string) $token;
+        return true;
     }
 
     /**

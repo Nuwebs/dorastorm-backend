@@ -20,14 +20,15 @@ class RoleController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        if (!$request->user()->can('viewAny', Role::class))
-            abort(403);
+        $this->authorize('viewAny', Role::class);
+
         $results = QueryBuilder::for(Role::orderBy('hierarchy', 'asc'))->allowedFilters([
             AllowedFilter::callback('global', function (Builder $query, $value) {
                 $query->where('name', 'LIKE', "%$value%")
                     ->orWhere('display_name', 'LIKE', "%$value%")
                     ->orWhere('description', 'LIKE', "%$value%")
                     ->orWhere('hierarchy', '=', $value)
+                    // phpcs:ignore reason: Not stated in docs
                     ->orWhereHas('permissions', function ($query) use ($value) {
                         $query->where('name', 'LIKE', "%$value%");
                     });
@@ -41,10 +42,9 @@ class RoleController extends Controller
      */
     public function store(Request $request): RoleResource
     {
-        $user = $request->user();
+        $this->authorize('create', Role::class);
 
-        if (!$user->can('create', Role::class))
-            abort(403);
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
         $allPermissions = Role::getAllDsPermissionsNames();
 
         $validationRules = [
@@ -73,8 +73,7 @@ class RoleController extends Controller
     public function show(Request $request, string $id): RoleResource
     {
         $role = Role::findOrFail($id);
-        if (!$request->user()->can('view', $role))
-            abort(403);
+        $this->authorize('view', $role);
 
         return new RoleResource($role);
     }
@@ -84,11 +83,9 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
         $role = Role::findOrFail($id);
-
-        if (!$user->can('update', $role))
-            abort(403);
+        $this->authorize('update', $role);
 
         $allPermissions = Role::getAllDsPermissionsNames();
 
@@ -118,8 +115,7 @@ class RoleController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $role = Role::findOrFail($id);
-        if (!$request->user()->can('delete', $role))
-            abort(403);
+        $this->authorize('delete', $role);
 
         $nUsersUsingRole = User::whereHasRole($role->name)->count();
 

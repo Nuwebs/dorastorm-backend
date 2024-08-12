@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Events\Registered;
+use App\Notifications\DsVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use Laratrust\Contracts\LaratrustUser;
 use Laratrust\Traits\HasRolesAndPermissions;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, JWTSubject, LaratrustUser
 {
+    /**
+     * @use HasFactory<\Database\Factories\UserFactory>
+     */
     use HasFactory, Notifiable, HasRolesAndPermissions;
 
     /**
@@ -38,13 +41,17 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -73,38 +80,6 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
     }
 
     /**
-     * @return HasMany<Post>
-     */
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class);
-    }
-
-    /**
-     * @param array<string, bool> $options
-     */
-    public function save(array $options = []): bool
-    {
-        if ($this->isDirty('email'))
-            $this->email_verified_at = null;
-
-        $result = parent::save($options);
-
-        if ($this->wasChanged('email') || !$this->hasVerifiedEmail())
-            event(new Registered($this));
-
-        return $result;
-    }
-
-    public function delete(): bool
-    {
-        if (!parent::delete())
-            return false;
-        $this->syncRoles([]);
-        return true;
-    }
-
-    /**
      * @return array<string>
      */
     public function getAllPermissionsNames(): array
@@ -116,5 +91,34 @@ class User extends Authenticatable implements JWTSubject, LaratrustUser, MustVer
             array_push($permissionNames, $permission->name);
         }
         return $permissionNames;
+    }
+
+    public function delete(): bool
+    {
+        if (!parent::delete())
+            return false;
+        $this->syncRoles([]);
+        return true;
+    }
+
+    /**
+     * This method is overrides the default sendEmailVerificationNotification in order to
+     * use the DsVerifyEmail notification. That notification is exactly the same as the
+     * one that it is extending, however, it queues the mail.
+     * @return void
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new DsVerifyEmail);
+    }
+
+    /**
+     * Get all of the tokens for the User
+     *
+     * @return HasMany<Token>
+     */
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(Token::class);
     }
 }

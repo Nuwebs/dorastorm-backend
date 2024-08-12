@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\JWTResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
+use App\Models\Token;
 use App\Models\User;
 use App\Rules\UserRoleRule;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,8 +36,8 @@ class UserController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        if (!$request->user()->can('viewAny', User::class))
-            abort(403);
+        $this->authorize('viewAny', User::class);
+
         $results = QueryBuilder::for(User::class)->allowedFilters([
             AllowedFilter::callback('global', function (Builder $query, $value) {
                 $query->where('name', 'LIKE', "%$value%")
@@ -45,24 +48,35 @@ class UserController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Request $request, string $id): UserResource
+    {
+        $user = User::findOrFail($id);
+        $this->authorize('view', $user);
+
+        return new UserResource($user);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request): UserResource
     {
-        if (!$request->user()->can('create', User::class))
-            abort(403);
+        $this->authorize('create', User::class);
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+
         $data = $request->validate(
             array_merge(
                 $this->newUserValidations,
-                $this->getRoleValidationRules($request->user()->role())
+                $this->getRoleValidationRules($user->role())
             )
         );
-        $newUser = new User($data);
-        $newUser->password = Hash::make($data['password']);
-        $newUser->save();
+
+        $newUser = $this->createNewUser($data);
         // If there isn't any role_id in the request, the role will be the lowest in the hierarchy.
         $roleId = !empty($data['role_id']) ?
-            intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()->id;
+            intval($data['role_id']) : Role::orderby('hierarchy', 'desc')->first()?->id;
         $newUser->syncRoles([$roleId]);
 
         return new UserResource($newUser);
@@ -71,24 +85,11 @@ class UserController extends Controller
     public function signUp(Request $request): UserResource
     {
         $data = $request->validate($this->newUserValidations);
-        $newUser = new User($data);
-        $newUser->password = Hash::make($data['password']);
-        $newUser->save();
+
+        $newUser = $this->createNewUser($data);
         $newUser->addRole(config('laratrust.most_basic_role_name'));
 
         return new UserResource($newUser);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Request $request, string $id): UserResource
-    {
-        $user = User::findOrFail($id);
-        if (!$request->user()->can('view', $user))
-            abort(403);
-
-        return new UserResource($user);
     }
 
     /**
@@ -97,14 +98,15 @@ class UserController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
-        if (!$request->user()->can('update', $user))
-            abort(403);
+        $this->authorize('update', $user);
+        $currentUser = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+
         $validations = array_merge(
             [
                 'name' => 'required|string|max:191',
                 'email' => 'required|email|max:191|unique:users,email,' . $user->id,
             ],
-            $this->getRoleValidationRules($request->user()->role())
+            $this->getRoleValidationRules($currentUser->role())
         );
         $data = $request->validate($validations);
 
@@ -135,9 +137,7 @@ class UserController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
-
-        if (!$request->user()->can('delete', $user))
-            abort(403);
+        $this->authorize('delete', $user);
 
         if ($this->isLastAdminLeft($user->role()))
             abort(409, trans('validation.custom.user_destroy.sole_admin'));
@@ -149,16 +149,13 @@ class UserController extends Controller
 
     public function showMe(Request $request): UserResource
     {
-        // Temp
         return new UserResource(auth()->user());
     }
 
     public function updatePassword(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
-
-        if (!$request->user()->can('update', $user))
-            abort(403);
+        $this->authorize('update', $user);
 
         $data = $request->validate([
             'password' => 'required|string|max:191|min:6|confirmed',
@@ -183,10 +180,47 @@ class UserController extends Controller
 
     public function rolesBelow(Request $request): AnonymousResourceCollection
     {
-        $userRoleHierarchy = $request->user()->role()->hierarchy;
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+        $userRoleHierarchy = $user->role()->hierarchy;
         $roles = Role::where('hierarchy', '>', ($userRoleHierarchy === 0) ? -1 : $userRoleHierarchy)
             ->orderBy('hierarchy', 'asc')->get();
         return RoleResource::collection($roles);
+    }
+
+    public function activeSessions(Request $request): AnonymousResourceCollection
+    {
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+
+        $activeSessions = $user->tokens()->where('revoked', false)->where('is_api_key', false)->get();
+
+        return JWTResource::collection($activeSessions);
+    }
+
+    public function revokeSession(Request $request, Token $token): JsonResponse
+    {
+        $user = $request->user() ?? abort(Response::HTTP_FORBIDDEN);
+        if ($token->user_id !== $user->id) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+        // phpcs:ignore reason: The auth guard is the dsjwt. The invalidate method accepts the encoded token to be invalidated
+        auth()->invalidate(false, $token->encoded);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Summary of createNewUser
+     * @param array<string, mixed> $data
+     * @return \App\Models\User
+     */
+    private function createNewUser(array $data): User
+    {
+        $newUser = new User($data);
+        $newUser->password = Hash::make($data['password']);
+        $newUser->save();
+        event(new Registered($newUser));
+
+        return $newUser;
     }
 
     /**

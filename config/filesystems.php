@@ -9,7 +9,7 @@ return [
     |
     | Here you may specify the default filesystem disk that should be used
     | by the framework. The "local" disk, as well as a variety of cloud
-    | based disks are available to your application. Just store away!
+    | based disks are available to your application for file storage.
     |
     */
 
@@ -20,11 +20,11 @@ return [
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
-    | Here you may configure as many filesystem "disks" as you wish, and you
-    | may even configure multiple disks of the same driver. Defaults have
-    | been set up for each driver as an example of the required values.
+    | Below you may configure as many filesystem disks as necessary, and you
+    | may even configure multiple disks for the same driver. Examples for
+    | most supported storage drivers are configured here for reference.
     |
-    | Supported Drivers: "local", "ftp", "sftp", "s3"
+    | Supported drivers: "local", "ftp", "sftp", "s3"
     |
     */
 
@@ -39,7 +39,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL') . '/storage',
+            'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -72,25 +72,5 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Maximum File Size
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure the maximum file sizes (in MB) allowed for different
-    | types of files. The array keys represent the file types and the array values
-    | represent the maximum file size for that file type. This can be used to
-    | restrict the file size for certain types of files, such as images, videos,
-    | documents, or other types of files.
-    |
-    */
-
-    'max_file_size' => [
-        'image' => 5000,
-        'video' => 30000,
-        'document' => 2000,
-        'others' => 2000
-    ]
 
 ];

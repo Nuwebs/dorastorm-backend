@@ -4,21 +4,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Language Lines
+    | Líneas de Idioma de Autenticación
     |--------------------------------------------------------------------------
     |
-    | The following language lines are used during authentication for various
-    | messages that we need to display to the user. You are free to modify
-    | these language lines according to your application's requirements.
+    | Las siguientes líneas de idioma se utilizan durante la autenticación para varios
+    | mensajes que necesitamos mostrar al usuario. Puedes modificar
+    | estas líneas de idioma según los requisitos de tu aplicación.
     |
     */
 
     'failed' => 'Estas credenciales no coinciden con nuestros registros.',
     'password' => 'La contraseña es incorrecta.',
-    'throttle' => 'Demasiados intentos de acceso. Por favor inténtelo de nuevo en :seconds segundos.',
-    'authenticated' => 'Ya estás autenticado.',
+    'throttle' => 'Demasiados intentos de acceso. Por favor intente nuevamente en :seconds segundos.',
 
-    // JWT
     'expired_token' => 'El token ha expirado y no puede ser refrescado. Se requiere iniciar sesión nuevamente.',
     'invalid_token' => 'El token es inválido o su firma no se pudo verificar.',
 ];

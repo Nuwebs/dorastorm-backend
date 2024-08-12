@@ -11,30 +11,19 @@ return [
      */
     'truncate_tables' => true,
 
-    /**
-     * The order of the roles matters. The higher the role, the lower the hierarhy (0 is top priority)
-     */
     'roles_structure' => [
         'superadmin' => [
             'users' => 'c,r,u,d',
-            'posts' => 'c,r,u,d',
             'roles' => 'c,r,u,d',
-            'quotations' => 'r,d',
-            'profile' => 'r,u'
+            'manage-api-keys' => 'c,r,u,d',
+            'api-keys' => 'c,r,u,d',
         ],
         'admin' => [
             'users' => 'c,r,u,d',
-            'posts' => 'c,r,u,d',
             'roles' => 'r',
-            'quotations' => 'r,d',
-            'profile' => 'r,u'
-        ],
-        'editor' => [
-            'posts' => 'c,r,u,d',
-            'profile' => 'r,u',
+            'api-keys' => 'c,r,u,d',
         ],
         config('laratrust.most_basic_role_name') => [
-            'profile' => 'r,u',
         ],
     ],
 
@@ -42,6 +31,6 @@ return [
         'c' => 'create',
         'r' => 'read',
         'u' => 'update',
-        'd' => 'delete'
-    ]
+        'd' => 'delete',
+    ],
 ];

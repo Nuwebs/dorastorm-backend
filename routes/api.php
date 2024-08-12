@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
@@ -78,15 +79,6 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         }
     });
 
-    if (DsFeature::enabled(DsFeature::QUOTATIONS_MODULE)) {
-        Route::post('/quotations', [QuotationController::class, 'store'])->name('quotation.store');
-    }
-
-    if (DsFeature::enabled(DsFeature::POSTS_MODULE)) {
-        Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-        Route::get('/posts/{post_slug}', [PostController::class, 'show'])->name('posts.show');
-    }
-
     Route::middleware('auth:api')->group(function () {
         // Protected routes
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
@@ -94,18 +86,18 @@ if (DsFeature::enabled(DsFeature::AUTH)) {
         Route::get('/email/verification', [AuthController::class, 'resendEmailVerification'])->name('verification.resend');
 
         Route::get('/me', [UserController::class, 'showMe'])->name('me');
+        Route::get('/me/sessions', [UserController::class, 'activeSessions'])->name('me.sessions');
+        Route::post('/me/sessions/revoke/{token}', [UserController::class, 'revokeSession'])->name('me.sessions.revoke');
+
         Route::get('/users/rolesbelow', [UserController::class, 'rolesBelow'])->name('users.rolesBelow');
         Route::patch('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.updatePassword');
         Route::apiResource('/users', UserController::class);
 
         Route::apiResource('/roles', RoleController::class);
 
-        if (DsFeature::enabled(DsFeature::QUOTATIONS_MODULE)) {
-            Route::apiResource('/quotations', QuotationController::class)->except(['update', 'store']);
-        }
-
-        if (DsFeature::enabled(DsFeature::POSTS_MODULE)) {
-            Route::resource('/posts', PostController::class)->except('create', 'index', 'show');
+        if (DsFeature::enabled(DsFeature::ALLOW_API_KEYS)) {
+            Route::post('/api-key', [ApiKeyController::class, 'store'])->name('api-key.store');
+            Route::delete('/api-key/{token}', [ApiKeyController::class, 'revoke'])->name('api-key.revoke');
         }
     });
 }
