@@ -295,7 +295,7 @@ return [
         */
 
         //'storage' => Tymon\JWTAuth\Providers\Storage\Illuminate::class,
-        'storage' => App\Utils\DsTokenBlacklist::class,
+        'storage' => App\Utils\Auth\DsTokenBlacklist::class,
 
     ],
 

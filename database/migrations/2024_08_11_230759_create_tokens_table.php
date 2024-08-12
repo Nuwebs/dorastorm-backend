@@ -12,7 +12,11 @@ return new class extends Migration {
     {
         Schema::create('tokens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('key')->unique();
+            $table->string('ip');
+            $table->string('user_agent');
+            $table->timestamp('expire_date');
             $table->timestamp('blacklist_until')->nullable();
             $table->boolean('revoked')->default(false);
             $table->timestamps();
