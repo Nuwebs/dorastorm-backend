@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureMaintenanceKey;
@@ -25,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return [
         'app' => config('app.name'),
-        'backend' => 'Dorastorm 3 by Nuwebs'
+        'backend' => 'Dorastorm 4 by Nuwebs'
     ];
 });
 
